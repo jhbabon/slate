@@ -10,12 +10,15 @@ const USAGE: &'static str = "
 Slate.
 
 Usage:
-  slate read <key>
+  slate add <key> [<value>]
+
+If <value> is not present, <stdin> will be used.
 ";
 
 #[derive(Debug, RustcDecodable)]
 struct Args {
     arg_key: String,
+    arg_value: String,
 }
 
 // TODO: Return Result so the main program can show messages
@@ -47,8 +50,18 @@ pub fn run(argv: Vec<String>) {
         Err(_) => HashMap::new(),
     };
 
-    match slate.get(&args.arg_key) {
-        Some(value) => { println!("{}", value) },
-        None => { println!("The key {} doesn't exist", args.arg_key) }
+    // write new values
+    // TODO: set value from stdin if empty
+    slate.insert(args.arg_key, args.arg_value);
+
+    let encoded = json::encode(&slate).unwrap();
+
+    let mut f = match File::create(&path) {
+        Ok(file) => file,
+        Err(_) => panic!("Cannot create file"),
+    };
+    match f.write_all(encoded.as_bytes()) {
+        Ok(_) => { println!("OK") },
+        Err(_) => { panic!("Couldn't save file") }
     };
 }

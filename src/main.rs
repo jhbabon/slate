@@ -21,22 +21,22 @@ Options:
   -v --version   Show version.
 
 Commands:
-    write Write a new key and value.
-    read  Read a key.
+    add  Write a new key and value.
+    get  Read a key.
 ";
 
 #[derive(Debug, RustcDecodable)]
 enum Command {
-    Write,
-    Read,
+    Add,
+    Get,
 }
 
 impl Command {
     fn run(self) {
         let argv: Vec<String> = env::args().collect();
         match self {
-            Command::Write => { command::write::run(argv) },
-            Command::Read => { command::read::run(argv) }
+            Command::Add => { command::add::run(argv) },
+            Command::Get => { command::get::run(argv) }
         }
     }
 }
