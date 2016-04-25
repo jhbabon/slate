@@ -22,18 +22,21 @@ Options:
 
 Commands:
     write Write a new key and value.
+    read  Read a key.
 ";
 
 #[derive(Debug, RustcDecodable)]
 enum Command {
     Write,
+    Read,
 }
 
 impl Command {
     fn run(self) {
         let argv: Vec<String> = env::args().collect();
         match self {
-            Command::Write => { command::write::run(argv) }
+            Command::Write => { command::write::run(argv) },
+            Command::Read => { command::read::run(argv) }
         }
     }
 }
