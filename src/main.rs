@@ -21,14 +21,16 @@ Options:
   -v --version   Show version.
 
 Commands:
-    add  Write a new key and value.
-    get  Read a key.
+    add   Write a new key and value.
+    get   Read a key.
+    list  List all keys.
 ";
 
 #[derive(Debug, RustcDecodable)]
 enum Command {
     Add,
     Get,
+    List,
 }
 
 impl Command {
@@ -36,7 +38,8 @@ impl Command {
         let argv: Vec<String> = env::args().collect();
         match self {
             Command::Add => { command::add::run(argv) },
-            Command::Get => { command::get::run(argv) }
+            Command::Get => { command::get::run(argv) },
+            Command::List => { command::list::run(argv) },
         }
     }
 }
