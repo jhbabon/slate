@@ -31,12 +31,11 @@ enum Command {
 }
 
 impl Command {
-    fn run(self, argv: &Vec<String>) {
+    fn run(self, argv: &Vec<String>) -> Result<String, &'static str> {
         match self {
             Command::Add => { command::add::run(argv) },
             Command::Get => { command::get::run(argv) },
             Command::List => { command::list::run(argv) },
-            // _ => { println!("noop") }
         }
     }
 }
@@ -51,12 +50,17 @@ struct Args {
 pub fn run(argv: Vec<String>) {
     let args: Args = parse_args(USAGE, &argv).unwrap_or_else(|e| e.exit());
 
-    match args.arg_command {
+    let command = match args.arg_command {
         None => {
             println!("Noop!");
             process::exit(404); // NOTE: use consistent error codes
         },
-        Some(command) => { command.run(&argv) }
+        Some(command) => command,
+    };
+
+    match command.run(&argv) {
+        Err(e) => panic!("{:?}", e),
+        Ok(value) => println!("{}", value),
     }
 }
 

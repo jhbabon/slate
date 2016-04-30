@@ -1,10 +1,11 @@
 // use cli::parse_args;
 use Slate;
 
-// TODO: Return Result so the main program can show messages
-// and errors
-pub fn run(_argv: &Vec<String>) {
-    let slate: Slate = Slate::new();
+pub fn run(_argv: &Vec<String>) -> Result<String, &'static str> {
+    let slate: Slate = Default::default();
 
-    slate.list();
+    match slate.list() {
+        Ok(list) => Ok(list.join("\n")),
+        Err(e) => Err(e),
+    }
 }

@@ -1,6 +1,9 @@
 extern crate rustc_serialize;
 extern crate docopt;
 
+#[cfg(test)]
+extern crate rand;
+
 pub mod command;
 pub mod cli;
 
@@ -12,100 +15,89 @@ use std::collections::HashMap;
 use rustc_serialize::json;
 
 pub struct Slate {
-    filename: PathBuf,
+    pub filepath: PathBuf,
 }
 
-impl Slate {
-    pub fn new() -> Slate {
+impl Default for Slate {
+    fn default() -> Slate {
         let mut path = match env::home_dir() {
             Some(home) => home,
-            None => panic!("No HOME dir found"),
+            None => panic!("No HOME dir found"), // TODO: What to do here?
         };
         path.push(".slate.json");
 
-        Slate {
-            filename: path,
+        Slate { filepath: path }
+    }
+}
+
+impl Slate {
+
+    pub fn add(&self, key: String, value: String) -> Result<(), &'static str> {
+        let mut contents = match self.read() {
+            Ok(contents) => contents,
+            Err(e) => { return Err(e) }
+        };
+
+        contents.insert(key, value);
+
+        self.write(&contents)
+    }
+
+    pub fn get(&self, key: String) -> Result<String, &'static str> {
+        let contents = match self.read() {
+            Ok(contents) => contents,
+            Err(e) => { return Err(e) }
+        };
+
+        match contents.get(&key) {
+            Some(value) => Ok(value.to_string()),
+            None => Ok(String::new()),
         }
     }
 
-    pub fn add(&self, key: String, value: String) {
-        let mut r = match File::open(&self.filename) {
+    pub fn list(&self) -> Result<Vec<String>, &'static str> {
+        let contents = match self.read() {
+            Ok(contents) => contents,
+            Err(e) => { return Err(e) }
+        };
+
+        let mut keys: Vec<_> = contents.keys().collect();
+        keys.sort(); // sort needs a mutable instance!!
+
+        let list: Vec<_> = keys.iter().map(|&s| s.clone()).collect();
+
+        Ok(list)
+    }
+
+    fn read(&self) -> Result<HashMap<String, String>, &'static str> {
+        let mut r = match File::open(&self.filepath) {
             Ok(file) => file,
-            Err(_) => panic!("Cannot open file"), // control when the file does not exist
+            Err(_) => { return Err("Cannot open file") }, // control when the file does not exist
         };
 
         let mut buffer = String::new();
         if let Err(_) = r.read_to_string(&mut buffer) {
-            panic!("Error reading file")
+            return Err("Error reading file");
         };
 
-        let mut slate: HashMap<String, String> = match json::decode(&buffer) {
+        let contents: HashMap<String, String> = match json::decode(&buffer) {
             Ok(hash) => hash,
             Err(_) => HashMap::new(),
         };
 
-        // write new values
-        slate.insert(key, value);
+        Ok(contents)
+    }
 
-        let encoded = json::encode(&slate).unwrap();
+    fn write(&self, contents: &HashMap<String, String>) -> Result<(), &'static str> {
+        let encoded = json::encode(&contents).unwrap();
 
-        let mut f = match File::create(&self.filename) {
+        let mut f = match File::create(&self.filepath) {
             Ok(file) => file,
-            Err(_) => panic!("Cannot create file"),
+            Err(_) => { return Err("Cannot create file") },
         };
         match f.write_all(encoded.as_bytes()) {
-            Ok(_) => { println!("OK") },
-            Err(_) => { panic!("Couldn't save file") }
-        };
-    }
-
-    pub fn get(&self, key: String) {
-        // read current state
-        let mut r = match File::open(&self.filename) {
-            Ok(file) => file,
-            Err(_) => panic!("Cannot open file"), // control when the file does not exist
-        };
-
-        let mut buffer = String::new();
-        match r.read_to_string(&mut buffer) {
-            Ok(_) => false,
-            Err(_) => panic!("Error reading file")
-        };
-
-        let slate: HashMap<String, String> = match json::decode(&buffer) {
-            Ok(hash) => hash,
-            Err(_) => HashMap::new(),
-        };
-
-        match slate.get(&key) {
-            Some(value) => { println!("{}", value) },
-            None => { println!("The key {} doesn't exist", key) }
-        };
-    }
-
-    pub fn list(&self) {
-        // read current state
-        let mut r = match File::open(&self.filename) {
-            Ok(file) => file,
-            Err(_) => panic!("Cannot open file"), // control when the file does not exist
-        };
-
-        let mut buffer = String::new();
-        match r.read_to_string(&mut buffer) {
-            Ok(_) => false,
-            Err(_) => panic!("Error reading file")
-        };
-
-        let slate: HashMap<String, String> = match json::decode(&buffer) {
-            Ok(hash) => hash,
-            Err(_) => HashMap::new(),
-        };
-
-        let mut keys: Vec<_> = slate.keys().collect();
-        keys.sort(); // sort needs a mutable instance!!
-
-        for key in &keys {
-            println!("{}", key);
+            Ok(_) => Ok(()),
+            Err(_) => Err("Couldn't save file")
         }
     }
 }
@@ -121,5 +113,101 @@ pub fn version() -> String {
         (Some(maj), Some(min), Some(pat)) =>
             format!("{}.{}.{}", maj, min, pat),
             _ => "".to_owned(),
+    }
+}
+
+#[cfg(test)]
+mod tests {
+
+    use super::*;
+    use std::env;
+    use std::path::PathBuf;
+    use std::io::prelude::*;
+    use std::fs::File;
+    use rand::{thread_rng, Rng};
+
+    fn create_temp_file(body: &str) -> PathBuf {
+        let random_name: String = thread_rng().gen_ascii_chars().take(10).collect();
+        let random_name = random_name + ".json";
+
+        let mut temp = env::temp_dir();
+        temp.push(&random_name);
+
+        let mut file = match File::create(&temp) {
+            Ok(file) => file,
+            Err(e) => panic!("Cannot create temporal file for tests: {:?}", e),
+        };
+        if let Err(e) = file.write_all(body.as_bytes()) {
+            panic!("Cannot add data to temporal file for tests: {:?}", e);
+        };
+
+        temp
+    }
+
+    #[test]
+    fn test_default_slate() {
+        let slate: Slate = Default::default();
+        let mut expected: PathBuf = env::home_dir().unwrap();
+        expected.push(".slate.json");
+
+        assert_eq!(expected, slate.filepath);
+    }
+
+    #[test]
+    fn it_adds_keys_with_values() {
+        let mut temp = create_temp_file("");
+        let mut file = File::open(&temp).unwrap();
+        let slate = Slate { filepath: temp };
+        let key = "test".to_string();
+        let value = "expected".to_string();
+
+        if let Err(e) = slate.add(key, value) {
+            panic!("Cannot add a value: {:?}", e);
+        };
+
+        let mut buffer = String::new();
+        let expected = "{\"test\":\"expected\"}";
+        if let Err(e) = file.read_to_string(&mut buffer) {
+            panic!("Cannot read temporal file for tests: {:?}", e);
+        };
+        assert_eq!(expected, buffer);
+    }
+
+    #[test]
+    fn it_gets_keys() {
+        let mut temp = create_temp_file("{\"test\":\"expected\"}");
+        let mut file = File::open(&temp).unwrap();
+        let slate = Slate { filepath: temp };
+        let key = "test".to_string();
+
+        match slate.get(key) {
+            Ok(value) => assert_eq!("expected", value),
+            Err(e) => panic!("Cannot get a value from slate: {:?}", e),
+        }
+    }
+
+    #[test]
+    fn it_gets_missing_keys() {
+        let mut temp = create_temp_file("{\"test\":\"expected\"}");
+        let mut file = File::open(&temp).unwrap();
+        let slate = Slate { filepath: temp };
+        let key = "missing".to_string();
+
+        match slate.get(key) {
+            Ok(value) => assert_eq!("", value),
+            Err(e) => panic!("Cannot get a value from slate: {:?}", e),
+        }
+    }
+
+    #[test]
+    fn it_lists_keys() {
+        let mut temp = create_temp_file("{\"a\":\"1\",\"b\":\"2\"}");
+        let mut file = File::open(&temp).unwrap();
+        let slate = Slate { filepath: temp };
+
+        match slate.list() {
+            Ok(list) => assert_eq!(vec!["a", "b"], list),
+            Err(e) => panic!("Cannot get list of values: {:?}", e),
+        }
     }
 }

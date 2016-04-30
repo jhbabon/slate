@@ -13,11 +13,9 @@ struct Args {
     arg_key: String,
 }
 
-// TODO: Return Result so the main program can show messages
-// and errors
-pub fn run(argv: &Vec<String>) {
+pub fn run(argv: &Vec<String>) -> Result<String, &'static str> {
     let args: Args = parse_args(USAGE, argv).unwrap_or_else(|e| e.exit());
-    let slate: Slate = Slate::new();
+    let slate: Slate = Default::default();
 
-    slate.get(args.arg_key);
+    slate.get(args.arg_key)
 }
