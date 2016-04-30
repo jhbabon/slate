@@ -1,12 +1,9 @@
-extern crate rustc_serialize;
-extern crate docopt;
 
-use docopt::Docopt;
-use std::env;
+use rustc_serialize::Decodable;
+use docopt;
 use std::process;
 
-mod utils;
-mod command;
+use command;
 
 const USAGE: &'static str = "
 Slate.
@@ -21,9 +18,9 @@ Options:
   -v --version   Show version.
 
 Commands:
-    add   Write a new key and value.
-    get   Read a key.
-    list  List all keys.
+   add   Write a new key and value.
+   get   Read a key.
+   list  List all keys.
 ";
 
 #[derive(Debug, RustcDecodable)]
@@ -34,12 +31,12 @@ enum Command {
 }
 
 impl Command {
-    fn run(self) {
-        let argv: Vec<String> = env::args().collect();
+    fn run(self, argv: &Vec<String>) {
         match self {
             Command::Add => { command::add::run(argv) },
             Command::Get => { command::get::run(argv) },
             Command::List => { command::list::run(argv) },
+            // _ => { println!("noop") }
         }
     }
 }
@@ -51,18 +48,22 @@ struct Args {
     flag_version: bool,
 }
 
-fn main() {
-    let args: Args = Docopt::new(USAGE)
-                            .and_then(|d| d.options_first(true)
-                                           .version(Some(utils::version()))
-                                           .decode())
-                            .unwrap_or_else(|e| e.exit());
+pub fn run(argv: Vec<String>) {
+    let args: Args = parse_args(USAGE, &argv).unwrap_or_else(|e| e.exit());
 
     match args.arg_command {
         None => {
             println!("Noop!");
             process::exit(404); // NOTE: use consistent error codes
         },
-        Some(command) => { command.run() }
+        Some(command) => { command.run(&argv) }
     }
+}
+
+pub fn parse_args<T>(usage: &str, argv: &Vec<String>) -> Result<T, docopt::Error>
+    where T: Decodable {
+        docopt::Docopt::new(usage)
+            .and_then(|d| d.argv(argv)
+                        .version(Some(super::version()))
+                        .decode())
 }

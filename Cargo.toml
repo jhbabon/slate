@@ -3,6 +3,14 @@ name = "slate"
 version = "0.1.0"
 authors = ["Juan Hernández <juan.hernandez.babon@gmail.com>"]
 
+[lib]
+name = "slate"
+path = "src/lib.rs"
+
+[[bin]]
+name = "slate"
+path = "src/bin.rs"
+
 [dependencies]
 docopt = "0.6"
 rustc-serialize = "0.3"  # if you're using `derive(RustcDecodable)`

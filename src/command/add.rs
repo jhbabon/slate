@@ -1,10 +1,5 @@
-use std::env;
-use std::io::prelude::*;
-use std::fs::File;
-use std::collections::HashMap;
-use rustc_serialize::json;
-use docopt::Docopt;
-use utils;
+use cli::parse_args;
+use Slate;
 
 const USAGE: &'static str = "
 Slate.
@@ -23,45 +18,11 @@ struct Args {
 
 // TODO: Return Result so the main program can show messages
 // and errors
-pub fn run(argv: Vec<String>) {
-    let args: Args = Docopt::new(USAGE)
-                            .and_then(|d| d.argv(argv)
-                                           .version(Some(utils::version()))
-                                           .decode())
-                            .unwrap_or_else(|e| e.exit());
+pub fn run(argv: &Vec<String>) {
+    let args: Args = parse_args(USAGE, argv).unwrap_or_else(|e| e.exit());
 
-    let mut path = match env::home_dir() {
-        Some(home) => home,
-        None => panic!("No HOME dir found"),
-    };
-    path.push(".slate.json");
+    let slate: Slate = Slate::new();
 
-    // read current state
-    let mut r = match File::open(&path) {
-        Ok(file) => file,
-        Err(_) => panic!("Cannot open file"), // control when the file does not exist
-    };
-
-    let mut buffer = String::new();
-    r.read_to_string(&mut buffer);
-
-    let mut slate: HashMap<String, String> = match json::decode(&buffer) {
-        Ok(hash) => hash,
-        Err(_) => HashMap::new(),
-    };
-
-    // write new values
-    // TODO: set value from stdin if empty
-    slate.insert(args.arg_key, args.arg_value);
-
-    let encoded = json::encode(&slate).unwrap();
-
-    let mut f = match File::create(&path) {
-        Ok(file) => file,
-        Err(_) => panic!("Cannot create file"),
-    };
-    match f.write_all(encoded.as_bytes()) {
-        Ok(_) => { println!("OK") },
-        Err(_) => { panic!("Couldn't save file") }
-    };
+    // TODO: Set value from stdin if arg_value is empty.
+    slate.add(args.arg_key, args.arg_value); // TODO: Return result.
 }
