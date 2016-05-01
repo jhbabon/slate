@@ -20,6 +20,8 @@ Commands:
    set   Write a new key and value.
    get   Read a key.
    list  List all keys.
+   rename Rename a key.
+   remove Delete a key.
 ";
 
 #[derive(Debug, RustcDecodable)]
@@ -27,6 +29,8 @@ enum Command {
     Set,
     Get,
     List,
+    Remove,
+    Rename,
 }
 
 impl Command {
@@ -35,6 +39,8 @@ impl Command {
             Command::Set => { command::set::run(argv) },
             Command::Get => { command::get::run(argv) },
             Command::List => { command::list::run(argv) },
+            Command::Remove => { command::remove::run(argv) },
+            Command::Rename => { command::rename::run(argv) },
         }
     }
 }

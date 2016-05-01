@@ -31,11 +31,12 @@ impl Default for Slate {
 }
 
 impl Slate {
+    // TODO: Make methods to work with references
 
     pub fn set(&self, key: String, value: String) -> Result<(), &'static str> {
         let mut contents = match self.read() {
             Ok(contents) => contents,
-            Err(e) => { return Err(e) }
+            Err(e) => { return Err(e) },
         };
 
         contents.insert(key, value);
@@ -46,7 +47,7 @@ impl Slate {
     pub fn get(&self, key: String) -> Result<String, &'static str> {
         let contents = match self.read() {
             Ok(contents) => contents,
-            Err(e) => { return Err(e) }
+            Err(e) => { return Err(e) },
         };
 
         match contents.get(&key) {
@@ -55,10 +56,38 @@ impl Slate {
         }
     }
 
+    pub fn remove(&self, key: String) -> Result<(), &'static str> {
+        let mut contents = match self.read() {
+            Ok(contents) => contents,
+            Err(e) => { return Err(e) },
+        };
+
+        contents.remove(&key);
+
+        self.write(&contents)
+    }
+
+    pub fn rename(&self, src: String, dts: String) -> Result<(), &'static str> {
+        let value = match self.get(src.clone()) {
+            Ok(v) => v,
+            Err(e) => { return Err(e) },
+        };
+
+        if let Err(e) = self.set(dts, value) {
+            return Err(e);
+        };
+
+        if let Err(e) = self.remove(src) {
+            return Err(e);
+        };
+
+        Ok(())
+    }
+
     pub fn list(&self) -> Result<Vec<String>, &'static str> {
         let contents = match self.read() {
             Ok(contents) => contents,
-            Err(e) => { return Err(e) }
+            Err(e) => { return Err(e) },
         };
 
         let mut keys: Vec<_> = contents.keys().collect();
@@ -97,7 +126,7 @@ impl Slate {
         };
         match f.write_all(encoded.as_bytes()) {
             Ok(_) => Ok(()),
-            Err(_) => Err("Couldn't save file")
+            Err(_) => Err("Couldn't save file"),
         }
     }
 }
@@ -118,7 +147,6 @@ pub fn version() -> String {
 
 #[cfg(test)]
 mod tests {
-
     use super::*;
     use std::env;
     use std::path::PathBuf;
@@ -155,7 +183,7 @@ mod tests {
 
     #[test]
     fn it_sets_keys_with_values() {
-        let mut temp = create_temp_file("");
+        let temp = create_temp_file("");
         let mut file = File::open(&temp).unwrap();
         let slate = Slate { filepath: temp };
         let key = "test".to_string();
@@ -175,8 +203,7 @@ mod tests {
 
     #[test]
     fn it_gets_keys() {
-        let mut temp = create_temp_file("{\"test\":\"expected\"}");
-        let mut file = File::open(&temp).unwrap();
+        let temp = create_temp_file("{\"test\":\"expected\"}");
         let slate = Slate { filepath: temp };
         let key = "test".to_string();
 
@@ -188,8 +215,7 @@ mod tests {
 
     #[test]
     fn it_gets_missing_keys() {
-        let mut temp = create_temp_file("{\"test\":\"expected\"}");
-        let mut file = File::open(&temp).unwrap();
+        let temp = create_temp_file("{\"test\":\"expected\"}");
         let slate = Slate { filepath: temp };
         let key = "missing".to_string();
 
@@ -201,13 +227,51 @@ mod tests {
 
     #[test]
     fn it_lists_keys() {
-        let mut temp = create_temp_file("{\"a\":\"1\",\"b\":\"2\"}");
-        let mut file = File::open(&temp).unwrap();
+        let temp = create_temp_file("{\"a\":\"1\",\"b\":\"2\"}");
         let slate = Slate { filepath: temp };
 
         match slate.list() {
             Ok(list) => assert_eq!(vec!["a", "b"], list),
             Err(e) => panic!("Cannot get list of values: {:?}", e),
         }
+    }
+
+    #[test]
+    fn it_removes_keys() {
+        let temp = create_temp_file("{\"test\":\"expected\"}");
+        let mut file = File::open(&temp).unwrap();
+        let slate = Slate { filepath: temp };
+        let key = "test".to_string();
+
+        if let Err(e) = slate.remove(key) {
+            panic!("Cannot remove the key: {:?}", e);
+        };
+
+        let mut buffer = String::new();
+        let expected = "{}";
+        if let Err(e) = file.read_to_string(&mut buffer) {
+            panic!("Cannot read temporal file for tests: {:?}", e);
+        };
+        assert_eq!(expected, buffer);
+    }
+
+    #[test]
+    fn it_renames_keys() {
+        let temp = create_temp_file("{\"test\":\"expected\"}");
+        let mut file = File::open(&temp).unwrap();
+        let slate = Slate { filepath: temp };
+        let key = "test".to_string();
+        let new_key = "spec".to_string();
+
+        if let Err(e) = slate.rename(key, new_key) {
+            panic!("Cannot move the key: {:?}", e);
+        };
+
+        let mut buffer = String::new();
+        let expected = "{\"spec\":\"expected\"}";
+        if let Err(e) = file.read_to_string(&mut buffer) {
+            panic!("Cannot read temporal file for tests: {:?}", e);
+        };
+        assert_eq!(expected, buffer);
     }
 }
