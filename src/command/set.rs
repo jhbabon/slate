@@ -28,7 +28,7 @@ pub fn run(argv: &Vec<String>) {
         None => input(),
     };
 
-    match slate.set(key, value) {
+    match slate.set(&key, &value) {
         Ok(_) => process::exit(0),
         Err(e) => panic!("{}", e),
     };

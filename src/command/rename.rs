@@ -18,7 +18,7 @@ pub fn run(argv: &Vec<String>) {
     let args: Args = parse_args(USAGE, argv).unwrap_or_else(|e| e.exit());
     let slate: Slate = Default::default();
 
-    match slate.rename(args.arg_old, args.arg_new) {
+    match slate.rename(&args.arg_old, &args.arg_new) {
         Err(e) => panic!("{}", e),
         Ok(_) => println!("The key has been renamed."),
     };

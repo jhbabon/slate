@@ -31,49 +31,47 @@ impl Default for Slate {
 }
 
 impl Slate {
-    // TODO: Make methods to work with references
-
-    pub fn set(&self, key: String, value: String) -> Result<(), &'static str> {
+    pub fn set(&self, key: &String, value: &String) -> Result<(), &'static str> {
         let mut contents = match self.read() {
             Ok(contents) => contents,
             Err(e) => { return Err(e) },
         };
 
-        contents.insert(key, value);
+        contents.insert(key.to_owned(), value.to_owned());
 
         self.write(&contents)
     }
 
-    pub fn get(&self, key: String) -> Result<String, &'static str> {
+    pub fn get(&self, key: &String) -> Result<String, &'static str> {
         let contents = match self.read() {
             Ok(contents) => contents,
             Err(e) => { return Err(e) },
         };
 
-        match contents.get(&key) {
+        match contents.get(key) {
             Some(value) => Ok(value.to_string()),
             None => Ok(String::new()),
         }
     }
 
-    pub fn remove(&self, key: String) -> Result<(), &'static str> {
+    pub fn remove(&self, key: &String) -> Result<(), &'static str> {
         let mut contents = match self.read() {
             Ok(contents) => contents,
             Err(e) => { return Err(e) },
         };
 
-        contents.remove(&key);
+        contents.remove(key);
 
         self.write(&contents)
     }
 
-    pub fn rename(&self, src: String, dts: String) -> Result<(), &'static str> {
-        let value = match self.get(src.clone()) {
+    pub fn rename(&self, src: &String, dts: &String) -> Result<(), &'static str> {
+        let value = match self.get(src) {
             Ok(v) => v,
             Err(e) => { return Err(e) },
         };
 
-        if let Err(e) = self.set(dts, value) {
+        if let Err(e) = self.set(dts, &value) {
             return Err(e);
         };
 
@@ -189,7 +187,7 @@ mod tests {
         let key = "test".to_string();
         let value = "expected".to_string();
 
-        if let Err(e) = slate.set(key, value) {
+        if let Err(e) = slate.set(&key, &value) {
             panic!("Cannot set a value: {:?}", e);
         };
 
@@ -207,7 +205,7 @@ mod tests {
         let slate = Slate { filepath: temp };
         let key = "test".to_string();
 
-        match slate.get(key) {
+        match slate.get(&key) {
             Ok(value) => assert_eq!("expected", value),
             Err(e) => panic!("Cannot get a value from slate: {:?}", e),
         }
@@ -219,7 +217,7 @@ mod tests {
         let slate = Slate { filepath: temp };
         let key = "missing".to_string();
 
-        match slate.get(key) {
+        match slate.get(&key) {
             Ok(value) => assert_eq!("", value),
             Err(e) => panic!("Cannot get a value from slate: {:?}", e),
         }
@@ -243,7 +241,7 @@ mod tests {
         let slate = Slate { filepath: temp };
         let key = "test".to_string();
 
-        if let Err(e) = slate.remove(key) {
+        if let Err(e) = slate.remove(&key) {
             panic!("Cannot remove the key: {:?}", e);
         };
 
@@ -263,7 +261,7 @@ mod tests {
         let key = "test".to_string();
         let new_key = "spec".to_string();
 
-        if let Err(e) = slate.rename(key, new_key) {
+        if let Err(e) = slate.rename(&key, &new_key) {
             panic!("Cannot move the key: {:?}", e);
         };
 
