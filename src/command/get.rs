@@ -19,6 +19,6 @@ pub fn run(argv: &Vec<String>) {
 
     match slate.get(args.arg_key) {
         Err(e) => panic!("{}", e),
-        Ok(value) => println!("{}", value),
+        Ok(value) => println!("{}", value.trim_right()),
     };
 }

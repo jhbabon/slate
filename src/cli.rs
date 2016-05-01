@@ -17,14 +17,14 @@ Options:
   -v --version   Show version.
 
 Commands:
-   add   Write a new key and value.
+   set   Write a new key and value.
    get   Read a key.
    list  List all keys.
 ";
 
 #[derive(Debug, RustcDecodable)]
 enum Command {
-    Add,
+    Set,
     Get,
     List,
 }
@@ -32,7 +32,7 @@ enum Command {
 impl Command {
     fn run(self, argv: &Vec<String>) {
         match self {
-            Command::Add => { command::add::run(argv) },
+            Command::Set => { command::set::run(argv) },
             Command::Get => { command::get::run(argv) },
             Command::List => { command::list::run(argv) },
         }

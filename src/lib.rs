@@ -32,7 +32,7 @@ impl Default for Slate {
 
 impl Slate {
 
-    pub fn add(&self, key: String, value: String) -> Result<(), &'static str> {
+    pub fn set(&self, key: String, value: String) -> Result<(), &'static str> {
         let mut contents = match self.read() {
             Ok(contents) => contents,
             Err(e) => { return Err(e) }
@@ -154,15 +154,15 @@ mod tests {
     }
 
     #[test]
-    fn it_adds_keys_with_values() {
+    fn it_sets_keys_with_values() {
         let mut temp = create_temp_file("");
         let mut file = File::open(&temp).unwrap();
         let slate = Slate { filepath: temp };
         let key = "test".to_string();
         let value = "expected".to_string();
 
-        if let Err(e) = slate.add(key, value) {
-            panic!("Cannot add a value: {:?}", e);
+        if let Err(e) = slate.set(key, value) {
+            panic!("Cannot set a value: {:?}", e);
         };
 
         let mut buffer = String::new();
