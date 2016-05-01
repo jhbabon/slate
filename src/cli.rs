@@ -17,11 +17,12 @@ Options:
   -v --version   Show version.
 
 Commands:
-   set   Write a new key and value.
-   get   Read a key.
-   list  List all keys.
+   set    Write a new key and value.
+   get    Read a key.
+   list   List all keys.
    rename Rename a key.
    remove Delete a key.
+   exec   Run a key value as a command.
 ";
 
 #[derive(Debug, RustcDecodable)]
@@ -31,6 +32,7 @@ enum Command {
     List,
     Remove,
     Rename,
+    Exec,
 }
 
 impl Command {
@@ -41,6 +43,7 @@ impl Command {
             Command::List => { command::list::run(argv) },
             Command::Remove => { command::remove::run(argv) },
             Command::Rename => { command::rename::run(argv) },
+            Command::Exec => { command::exec::run(argv) },
         }
     }
 }
