@@ -13,9 +13,12 @@ struct Args {
     arg_key: String,
 }
 
-pub fn run(argv: &Vec<String>) -> Result<String, &'static str> {
+pub fn run(argv: &Vec<String>) {
     let args: Args = parse_args(USAGE, argv).unwrap_or_else(|e| e.exit());
     let slate: Slate = Default::default();
 
-    slate.get(args.arg_key)
+    match slate.get(args.arg_key) {
+        Err(e) => panic!("{}", e),
+        Ok(value) => println!("{}", value),
+    };
 }

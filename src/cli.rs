@@ -1,4 +1,3 @@
-
 use rustc_serialize::Decodable;
 use docopt;
 use std::process;
@@ -31,7 +30,7 @@ enum Command {
 }
 
 impl Command {
-    fn run(self, argv: &Vec<String>) -> Result<String, &'static str> {
+    fn run(self, argv: &Vec<String>) {
         match self {
             Command::Add => { command::add::run(argv) },
             Command::Get => { command::get::run(argv) },
@@ -50,18 +49,13 @@ struct Args {
 pub fn run(argv: Vec<String>) {
     let args: Args = parse_args(USAGE, &argv).unwrap_or_else(|e| e.exit());
 
-    let command = match args.arg_command {
+    match args.arg_command {
         None => {
             println!("Noop!");
             process::exit(404); // NOTE: use consistent error codes
         },
-        Some(command) => command,
+        Some(command) => { command.run(&argv) },
     };
-
-    match command.run(&argv) {
-        Err(e) => panic!("{:?}", e),
-        Ok(value) => println!("{}", value),
-    }
 }
 
 pub fn parse_args<T>(usage: &str, argv: &Vec<String>) -> Result<T, docopt::Error>
