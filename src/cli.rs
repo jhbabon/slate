@@ -9,8 +9,7 @@ Slate.
 
 Usage:
   slate <command> [<args>...]
-  slate (-h | --help)
-  slate (-v | --version)
+  slate [options]
 
 Options:
   -h --help      Show this screen.
@@ -56,7 +55,7 @@ struct Args {
 }
 
 pub fn run(argv: Vec<String>) {
-    let args: Args = parse_args(USAGE, &argv).unwrap_or_else(|e| e.exit());
+    let args: Args = parse_main_args(USAGE, &argv).unwrap_or_else(|e| e.exit());
 
     match args.arg_command {
         None => {
@@ -67,10 +66,19 @@ pub fn run(argv: Vec<String>) {
     };
 }
 
+fn parse_main_args<T>(usage: &str, argv: &Vec<String>) -> Result<T, docopt::Error>
+    where T: Decodable {
+        docopt::Docopt::new(usage)
+            .and_then(|d| d.argv(argv)
+                           .options_first(true)
+                           .version(Some(super::version()))
+                           .decode())
+}
+
 pub fn parse_args<T>(usage: &str, argv: &Vec<String>) -> Result<T, docopt::Error>
     where T: Decodable {
         docopt::Docopt::new(usage)
             .and_then(|d| d.argv(argv)
-                        .version(Some(super::version()))
-                        .decode())
+                           .version(Some(super::version()))
+                           .decode())
 }

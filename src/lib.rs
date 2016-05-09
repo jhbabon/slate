@@ -66,6 +66,17 @@ impl Slate {
         self.write(&contents)
     }
 
+    pub fn clear(&self) -> Result<(), &'static str> {
+        let mut contents = match self.read() {
+            Ok(contents) => contents,
+            Err(e) => { return Err(e) },
+        };
+
+        contents.clear();
+
+        self.write(&contents)
+    }
+
     pub fn rename(&self, src: &String, dts: &String) -> Result<(), &'static str> {
         let value = match self.get(src) {
             Ok(v) => v,
@@ -268,6 +279,24 @@ mod tests {
 
         let mut buffer = String::new();
         let expected = "{\"spec\":\"expected\"}";
+        if let Err(e) = file.read_to_string(&mut buffer) {
+            panic!("Cannot read temporal file for tests: {:?}", e);
+        };
+        assert_eq!(expected, buffer);
+    }
+
+    #[test]
+    fn it_clears_keys() {
+        let temp = create_temp_file("{\"test\":\"expected\"}");
+        let mut file = File::open(&temp).unwrap();
+        let slate = Slate { filepath: temp };
+
+        if let Err(e) = slate.clear() {
+            panic!("Cannot clear keys: {:?}", e);
+        };
+
+        let mut buffer = String::new();
+        let expected = "{}";
         if let Err(e) = file.read_to_string(&mut buffer) {
             panic!("Cannot read temporal file for tests: {:?}", e);
         };
