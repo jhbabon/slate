@@ -1,6 +1,7 @@
 extern crate rustc_serialize;
 extern crate docopt;
 extern crate exec;
+extern crate regex;
 
 #[cfg(test)]
 extern crate rand;
