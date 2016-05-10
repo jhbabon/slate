@@ -1,15 +1,33 @@
-// use cli::parse_args;
+use cli::parse_args;
 use Slate;
 
-pub fn run(_argv: &Vec<String>) {
+const USAGE: &'static str = "
+Slate: List all value names.
+
+Usage:
+  slate list [--help]
+
+Options:
+  -h --help  Show this help.
+
+Examples:
+
+  slate list
+  #=> foo
+  #=> more
+";
+
+#[derive(Debug, RustcDecodable)]
+struct Args;
+
+pub fn run(argv: &Vec<String>) -> Result<Option<String>, &str> {
+    let _args: Args = parse_args(USAGE, argv).unwrap_or_else(|e| e.exit());
     let slate: Slate = Default::default();
 
-    let list = match slate.list() {
-        Ok(list) => list,
-        Err(e) => panic!("{}", e),
+    let output = match slate.list() {
+        Ok(list) => list.join("\n"),
+        Err(e) => { return Err(e) },
     };
 
-    for key in &list {
-        println!("{}", key);
-    };
+    Ok(Some(output))
 }

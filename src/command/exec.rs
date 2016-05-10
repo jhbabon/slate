@@ -3,10 +3,20 @@ use exec;
 use Slate;
 
 const USAGE: &'static str = "
-Slate.
+Slate: Execute a key as a normal shell command.
 
 Usage:
   slate exec <key>
+  slate exec [options]
+
+Options:
+  -h --help  Show this help.
+
+Examples:
+
+  slate set echo 'echo hello'
+  slate exec echo
+  #=> hello
 ";
 
 #[derive(Debug, RustcDecodable)]
@@ -14,12 +24,12 @@ struct Args {
     arg_key: String,
 }
 
-pub fn run(argv: &Vec<String>) {
+pub fn run(argv: &Vec<String>) -> Result<Option<String>, &str> {
     let args: Args = parse_args(USAGE, argv).unwrap_or_else(|e| e.exit());
     let slate: Slate = Default::default();
 
     let value = match slate.get(&args.arg_key) {
-        Err(e) => panic!("{}", e),
+        Err(e) => { return Err(e) },
         Ok(value) => value.trim_right().to_owned(),
     };
 
@@ -28,7 +38,9 @@ pub fn run(argv: &Vec<String>) {
 
     let mut runner = exec::Command::new(&cmd);
     runner.args(&args_list);
-    let err = runner.exec();
+    let _err = runner.exec();
 
-    panic!("{}", err);
+    // If this line is executed it means that the process
+    // didn't change and so there must be an error.
+    Err("There was an error executing the command")
 }

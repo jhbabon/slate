@@ -37,7 +37,7 @@ enum Command {
 }
 
 impl Command {
-    fn run(self, argv: &Vec<String>) {
+    fn run(self, argv: &Vec<String>) -> Result<Option<String>, &str> {
         match self {
             Command::Set => { command::set::run(argv) },
             Command::Get => { command::get::run(argv) },
@@ -60,13 +60,26 @@ struct Args {
 pub fn run(argv: Vec<String>) {
     let args: Args = parse_main_args(USAGE, &argv).unwrap_or_else(|e| e.exit());
 
-    match args.arg_command {
+    let command = match args.arg_command {
         None => {
             println!("Noop!");
             process::exit(404); // NOTE: use consistent error codes
         },
-        Some(command) => { command.run(&argv) },
+        Some(command) => command,
     };
+
+    match command.run(&argv) {
+        Err(e) => error(e),
+        Ok(message) => out(message),
+    };
+}
+
+pub fn parse_args<T>(usage: &str, argv: &Vec<String>) -> Result<T, docopt::Error>
+    where T: Decodable {
+        docopt::Docopt::new(usage)
+            .and_then(|d| d.argv(argv)
+                           .version(Some(super::version()))
+                           .decode())
 }
 
 fn parse_main_args<T>(usage: &str, argv: &Vec<String>) -> Result<T, docopt::Error>
@@ -78,10 +91,14 @@ fn parse_main_args<T>(usage: &str, argv: &Vec<String>) -> Result<T, docopt::Erro
                            .decode())
 }
 
-pub fn parse_args<T>(usage: &str, argv: &Vec<String>) -> Result<T, docopt::Error>
-    where T: Decodable {
-        docopt::Docopt::new(usage)
-            .and_then(|d| d.argv(argv)
-                           .version(Some(super::version()))
-                           .decode())
+fn error(err: &str) {
+    println!("{}", err);
+    process::exit(1);
+}
+
+fn out(message: Option<String>) {
+    if let Some(msg) = message {
+        println!("{}", msg);
+    };
+    process::exit(0);
 }
