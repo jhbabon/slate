@@ -52,7 +52,7 @@ impl Command {
 
 #[derive(Debug, RustcDecodable)]
 struct Args {
-    arg_command: Option<Command>,
+    arg_command: Command,
     flag_help: bool,
     flag_version: bool,
 }
@@ -60,13 +60,7 @@ struct Args {
 pub fn run(argv: Vec<String>) {
     let args: Args = parse_main_args(USAGE, &argv).unwrap_or_else(|e| e.exit());
 
-    let command = match args.arg_command {
-        None => {
-            println!("Noop!");
-            process::exit(404); // NOTE: use consistent error codes
-        },
-        Some(command) => command,
-    };
+    let command = args.arg_command;
 
     match command.run(&argv) {
         Err(e) => error(e),
