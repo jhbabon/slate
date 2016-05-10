@@ -40,7 +40,7 @@ impl Default for Slate {
     fn default() -> Slate {
         let mut path = match env::home_dir() {
             Some(home) => home,
-            None => panic!("No HOME dir found"), // TODO: What to do here?
+            None => panic!("No HOME dir found"),
         };
         path.push(".slate");
 

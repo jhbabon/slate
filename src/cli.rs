@@ -5,10 +5,7 @@ use std::process;
 use command;
 
 const USAGE: &'static str = "
-Slate.
-
-Slate let's you have a small key value store in your command line,
-with some extras.
+Slate: Manage your snippets from your command line.
 
 Usage:
   slate <command> [<args>...]

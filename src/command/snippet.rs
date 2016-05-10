@@ -3,7 +3,12 @@ use cli::parse_args;
 use Slate;
 
 const USAGE: &'static str = "
-Slate: Use a key as a snippet and replace its values.
+Slate: Use a key as a snippet and replace its values with
+whatever you want.
+
+A snippet is any text with placeholders with the form `:name:`.
+To replace these placeholders you just need to pass the name
+of the placeholder followed by a new value.
 
 Usage:
   slate snippet <key> --replace (<placeholder> <value>)...
