@@ -7,6 +7,9 @@ use command;
 const USAGE: &'static str = "
 Slate.
 
+Slate let's you have a small key value store in your command line,
+with some extras.
+
 Usage:
   slate <command> [<args>...]
   slate [options]
@@ -57,6 +60,9 @@ struct Args {
     flag_version: bool,
 }
 
+/// Main entry point of the command.
+///
+/// It executes the given command and handles its output and errors.
 pub fn run(argv: Vec<String>) {
     let args: Args = parse_main_args(USAGE, &argv).unwrap_or_else(|e| e.exit());
 
@@ -68,6 +74,9 @@ pub fn run(argv: Vec<String>) {
     };
 }
 
+/// Parse arguments based on a USAGE slice string.
+///
+/// This is used mainly by subcommands.
 pub fn parse_args<T>(usage: &str, argv: &Vec<String>) -> Result<T, docopt::Error>
     where T: Decodable {
         docopt::Docopt::new(usage)
@@ -76,6 +85,7 @@ pub fn parse_args<T>(usage: &str, argv: &Vec<String>) -> Result<T, docopt::Error
                            .decode())
 }
 
+/// Parse arguments for the main command.
 fn parse_main_args<T>(usage: &str, argv: &Vec<String>) -> Result<T, docopt::Error>
     where T: Decodable {
         docopt::Docopt::new(usage)
@@ -85,11 +95,13 @@ fn parse_main_args<T>(usage: &str, argv: &Vec<String>) -> Result<T, docopt::Erro
                            .decode())
 }
 
+/// Show errors to the user.
 fn error(err: &str) {
     println!("{}", err);
     process::exit(1);
 }
 
+/// Show program messages to the user.
 fn out(message: Option<String>) {
     if let Some(msg) = message {
         println!("{}", msg);

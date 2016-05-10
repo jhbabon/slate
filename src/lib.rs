@@ -16,23 +16,56 @@ use std::fs::File;
 use std::collections::HashMap;
 use rustc_serialize::json;
 
+/// The main Key-Value structure.
 pub struct Slate {
+
+    /// Where the file containing the data is.
     pub filepath: PathBuf,
 }
 
 impl Default for Slate {
+
+    /// Get a default Slate. It will use a default file
+    /// in your home directory, the `.slate` file.
+    ///
+    /// # Example
+    ///
+    /// ```
+    /// use slate::Slate;
+    ///
+    /// let slate: Slate = Default::default();
+    /// println!("{}", slate.filepath.to_str().unwrap());
+    /// //=> $HOME/.slate
+    /// ```
     fn default() -> Slate {
         let mut path = match env::home_dir() {
             Some(home) => home,
             None => panic!("No HOME dir found"), // TODO: What to do here?
         };
-        path.push(".slate.json");
+        path.push(".slate");
 
         Slate { filepath: path }
     }
 }
 
 impl Slate {
+
+    /// Set a key with its value.
+    ///
+    /// # Example
+    ///
+    /// ```
+    /// use slate::Slate;
+    ///
+    /// let slate: Slate = Default::default();
+    /// let key = "foo".to_string();
+    /// let value = "bar".to_string();
+    ///
+    /// match slate.set(&key, &value) {
+    ///   Ok(_) => println!("Saved"),
+    ///   Err(e) => panic!("{}", e),
+    /// };
+    /// ```
     pub fn set(&self, key: &String, value: &String) -> Result<(), &'static str> {
         let mut contents = match self.read() {
             Ok(contents) => contents,
@@ -44,6 +77,22 @@ impl Slate {
         self.write(&contents)
     }
 
+    /// Get the value of a key
+    ///
+    ///
+    /// # Example
+    ///
+    /// ```
+    /// use slate::Slate;
+    ///
+    /// let slate: Slate = Default::default();
+    /// let key = "foo".to_string();
+    ///
+    /// match slate.get(&key) {
+    ///   Ok(value) => println!("{}", value), //=> bar
+    ///   Err(e) => panic!("{}", e),
+    /// };
+    /// ```
     pub fn get(&self, key: &String) -> Result<String, &'static str> {
         let contents = match self.read() {
             Ok(contents) => contents,
@@ -56,6 +105,21 @@ impl Slate {
         }
     }
 
+    /// Remove completely a key with its value.
+    ///
+    /// # Example
+    ///
+    /// ```
+    /// use slate::Slate;
+    ///
+    /// let slate: Slate = Default::default();
+    /// let key = "foo".to_string();
+    ///
+    /// match slate.remove(&key) {
+    ///   Ok(_) => println!("Key removed"),
+    ///   Err(e) => panic!("{}", e),
+    /// };
+    /// ```
     pub fn remove(&self, key: &String) -> Result<(), &'static str> {
         let mut contents = match self.read() {
             Ok(contents) => contents,
@@ -67,6 +131,20 @@ impl Slate {
         self.write(&contents)
     }
 
+    /// Remove all keys.
+    ///
+    /// # Example
+    ///
+    /// ```
+    /// use slate::Slate;
+    ///
+    /// let slate: Slate = Default::default();
+    ///
+    /// match slate.clear() {
+    ///   Ok(_) => println!("Keys removed"),
+    ///   Err(e) => panic!("{}", e),
+    /// };
+    /// ```
     pub fn clear(&self) -> Result<(), &'static str> {
         let mut contents = match self.read() {
             Ok(contents) => contents,
@@ -78,6 +156,22 @@ impl Slate {
         self.write(&contents)
     }
 
+    /// Rename a key.
+    ///
+    /// # Example
+    ///
+    /// ```
+    /// use slate::Slate;
+    ///
+    /// let slate: Slate = Default::default();
+    /// let old = "foo".to_string();
+    /// let new = "bar".to_string();
+    ///
+    /// match slate.rename(&old, &new) {
+    ///   Ok(_) => println!("Renamed!"),
+    ///   Err(e) => panic!("{}", e),
+    /// };
+    /// ```
     pub fn rename(&self, src: &String, dts: &String) -> Result<(), &'static str> {
         let value = match self.get(src) {
             Ok(v) => v,
@@ -95,6 +189,23 @@ impl Slate {
         Ok(())
     }
 
+    /// Get a list of all keys.
+    ///
+    /// # Example
+    ///
+    /// ```
+    /// use slate::Slate;
+    ///
+    /// let slate: Slate = Default::default();
+    /// let list = match slate.list() {
+    ///   Ok(all) => all,
+    ///   Err(e) => panic!("{}", e),
+    /// };
+    ///
+    /// for key in &list {
+    ///   println!("{}", key);
+    /// }
+    /// ```
     pub fn list(&self) -> Result<Vec<String>, &'static str> {
         let contents = match self.read() {
             Ok(contents) => contents,
@@ -109,6 +220,7 @@ impl Slate {
         Ok(list)
     }
 
+    /// Read the contents of the Slate file.
     fn read(&self) -> Result<HashMap<String, String>, &'static str> {
         let mut r = match File::open(&self.filepath) {
             Ok(file) => file,
@@ -128,6 +240,7 @@ impl Slate {
         Ok(contents)
     }
 
+    /// Write to the Slate file.
     fn write(&self, contents: &HashMap<String, String>) -> Result<(), &'static str> {
         let encoded = json::encode(&contents).unwrap();
 
@@ -142,6 +255,8 @@ impl Slate {
     }
 }
 
+
+/// Get the version of the library.
 pub fn version() -> String {
     let (maj, min, pat) = (
         option_env!("CARGO_PKG_VERSION_MAJOR"),
@@ -187,7 +302,7 @@ mod tests {
     fn test_default_slate() {
         let slate: Slate = Default::default();
         let mut expected: PathBuf = env::home_dir().unwrap();
-        expected.push(".slate.json");
+        expected.push(".slate");
 
         assert_eq!(expected, slate.filepath);
     }

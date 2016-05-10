@@ -10,6 +10,7 @@ path = "src/lib.rs"
 [[bin]]
 name = "slate"
 path = "src/bin.rs"
+doc = false
 
 [dependencies]
 docopt = "0.6"
