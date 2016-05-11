@@ -7,6 +7,9 @@ use command;
 const USAGE: &'static str = "
 Slate: Manage your snippets from your command line.
 
+Note that Slate will use the file ~/.slate to save
+its contents.
+
 Usage:
   slate <command> [<args>...]
   slate [options]

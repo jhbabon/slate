@@ -24,6 +24,9 @@ You can always check all the commands available with the `--help` option:
 $ slate --help
 Slate: Manage your snippets from your command line.
 
+Note that Slate will use the file ~/.slate to save
+its contents.
+
 Usage:
   slate <command> [<args>...]
   slate [options]
@@ -84,6 +87,10 @@ $ slate get redis > redis.conf
 $ cd other/project/v2
 $ slate get redis > redis.conf
 ```
+
+### The `~/.slate` file
+
+By default Slate will save all its contents in the file `~/.slate`. It is just a plain JSON file for the moment. It is better if you don't touch it and let the program handle it.
 
 ## Experimental
 
