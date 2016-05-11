@@ -1,12 +1,12 @@
 # Slate
 
-Slate is a snippets manager in your command line.
+Slate is a snippets manager for your command line.
 
 It helps you to have all those small pieces of code, text, and so on in one place and in your favorite environment: the shell.
 
 ## Installation
 
-Slate is made with `rust`, so you will need the latest stable version of it to compile and run the program.
+Slate is made with `rust`, so you will need the [latest stable version](https://www.rust-lang.org/downloads.html) of it to compile and run the program.
 
 Clone the repository and run `cargo install`. You can also run `cargo build` if you want only to play with it:
 
@@ -45,6 +45,7 @@ Commands:
 As you can see, Slate is basically a `HashMap`, so playing with it is straight forward:
 
 ```
+# Basic operations
 $ slate set foo bar
 $ slate get foo
 bar
@@ -54,7 +55,7 @@ $ slate remove foo
 The key has been removed
 $ slate list
 
-
+# Renaming
 $ slate set bar baz
 $ slate list
 bar
@@ -64,6 +65,7 @@ The key has been renamed
 $ slate list
 foo
 
+# Cleaning up
 $ slate remove --all
 All keys have been removed
 ```
@@ -85,7 +87,7 @@ $ slate get redis > redis.conf
 
 ## Experimental
 
-Slate also offers some extra commands to make it a little bit more useful, or not, but they are nice to play with until you find how useful they can be.
+Slate also offers some extra commands to make it a little bit more useful, or not, maybe. But these commands are nice to play with until you find how useful they can be.
 
 ### exec
 
@@ -99,10 +101,12 @@ hello world!
 
 ### snippet
 
-You can also save a snippet and reuse it with different values.
+You can also save a template and reuse it with different values. A template, or snippet, is composed by text and some _placeholders_. These placeholders is what you want to substitue with fresh values. A placeholder has the form `:placeholder:`, where `placeholder` can be whatever text you want.
+
+You can see a minimum example of how to use here:
 
 ```
-$ slate set snipt ':c: :m:'
-$ slate snippet snipt -r c echo m 'Hello World!'
+$ slate set tepl ':c: :m:'
+$ slate snippet tepl -r c echo m 'Hello World!'
 echo Hello World!
 ```
