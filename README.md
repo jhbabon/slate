@@ -11,7 +11,7 @@ Slate is made with `rust`, so you will need the [latest stable version](https://
 Clone the repository and run `cargo install`. You can also run `cargo build` if you want only to play with it:
 
 ```
-$ git clone slate.git slate
+$ git clone https://github.com/jhbabon/slate.git slate
 $ cd slate
 $ cargo install
 ```
