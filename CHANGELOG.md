@@ -4,6 +4,10 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 
+## [1.0.1] - 2016-05-11
+### Added
+- MIT License.
+
 ## 1.0.0 - 2016-05-11
 ### Added
 - The subcommand `set` to save new values.
@@ -17,4 +21,5 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 - Tests for the main `Slate` structure.
 - Use `~/.slate` file as main storage point.
 
-[Unreleased]: https://github.com/jhbabon/slate/compare/v1.0.0...HEAD
+[Unreleased]: https://github.com/jhbabon/slate/compare/v1.0.1...HEAD
+[1.0.1]: https://github.com/jhbabon/slate/compare/v1.0.0...v1.0.1
