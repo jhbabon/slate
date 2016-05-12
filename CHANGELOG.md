@@ -6,6 +6,9 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 ### Fixed
 - Fix install instructions. Use correct git repo url.
 
+### Added
+- Add more meta information in Cargo.toml
+
 ## [1.0.1] - 2016-05-11
 ### Added
 - MIT License.
