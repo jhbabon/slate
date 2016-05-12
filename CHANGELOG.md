@@ -3,6 +3,8 @@ All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
+
+## [1.0.2] - 2016-05-12
 ### Fixed
 - Fix install instructions. Use correct git repo url.
 
@@ -26,5 +28,6 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 - Tests for the main `Slate` structure.
 - Use `~/.slate` file as main storage point.
 
-[Unreleased]: https://github.com/jhbabon/slate/compare/v1.0.1...HEAD
+[Unreleased]: https://github.com/jhbabon/slate/compare/v1.0.2...HEAD
+[1.0.2]: https://github.com/jhbabon/slate/compare/v1.0.2...v1.0.2
 [1.0.1]: https://github.com/jhbabon/slate/compare/v1.0.0...v1.0.1
