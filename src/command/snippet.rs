@@ -1,6 +1,7 @@
 use regex::{Regex, NoExpand};
 use cli::parse_args;
 use Slate;
+use message::Message;
 
 const USAGE: &'static str = "
 Slate: Use a key as a snippet and replace its values with
@@ -32,20 +33,20 @@ struct Args {
     arg_value: Vec<String>,
 }
 
-pub fn run(argv: &Vec<String>) -> Result<Option<String>, &str> {
+pub fn run(argv: &Vec<String>) -> Result<Option<Message>, Message> {
     let args: Args = parse_args(USAGE, argv).unwrap_or_else(|e| e.exit());
     let slate: Slate = Default::default();
     let pairs = args.arg_placeholder.iter()
         .zip(args.arg_value.iter());
 
     let snippet = match slate.get(&args.arg_key) {
-        Err(e) => { return Err(e) },
+        Err(e) => { return Err(Message::Info(e.to_owned())) },
         Ok(value) => value.trim_right().to_owned(),
     };
 
     let output: String = pairs.fold(snippet, replacer);
 
-    Ok(Some(output))
+    Ok(Some(Message::Raw(output)))
 }
 
 fn replacer(snippet: String, (placeholder, value): (&String, &String)) -> String {

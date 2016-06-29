@@ -8,6 +8,7 @@ extern crate rand;
 
 pub mod command;
 pub mod cli;
+pub mod message;
 
 use std::env;
 use std::path::PathBuf;
@@ -23,6 +24,10 @@ pub struct Slate {
     pub filepath: PathBuf,
 }
 
+// FIXME: The examples are fucking up the real .slate file
+// I need to pass an env variable to set up the file path
+// and fallback to $HOME/.slate if the env var is not
+// set.
 impl Default for Slate {
 
     /// Get a default Slate. It will use a default file

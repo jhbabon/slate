@@ -1,6 +1,7 @@
 use std::io::{self, Read};
 use cli::parse_args;
 use Slate;
+use message::Message;
 
 const USAGE: &'static str = "
 Slate: Set a value using a name (or key).
@@ -27,7 +28,7 @@ struct Args {
     arg_value: Option<String>,
 }
 
-pub fn run(argv: &Vec<String>) -> Result<Option<String>, &str> {
+pub fn run(argv: &Vec<String>) -> Result<Option<Message>, Message> {
     let args: Args = parse_args(USAGE, argv).unwrap_or_else(|e| e.exit());
 
     let slate: Slate = Default::default();
@@ -38,12 +39,12 @@ pub fn run(argv: &Vec<String>) -> Result<Option<String>, &str> {
     };
     let value = match value {
         Ok(v) => v,
-        Err(e) => { return Err(e) },
+        Err(e) => { return Err(Message::Info(e.to_owned())) },
     };
 
     match slate.set(&key, &value) {
         Ok(_) => Ok(None),
-        Err(e) => Err(e),
+        Err(e) => Err(Message::Info(e.to_owned())),
     }
 }
 

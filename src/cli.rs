@@ -3,6 +3,7 @@ use docopt;
 use std::process;
 
 use command;
+use message::Message;
 
 const USAGE: &'static str = "
 Slate: Manage your snippets from your command line.
@@ -40,7 +41,7 @@ enum Command {
 }
 
 impl Command {
-    fn run(self, argv: &Vec<String>) -> Result<Option<String>, &str> {
+    fn run(self, argv: &Vec<String>) -> Result<Option<Message>, Message> {
         match self {
             Command::Set => { command::set::run(argv) },
             Command::Get => { command::get::run(argv) },
@@ -96,15 +97,15 @@ fn parse_main_args<T>(usage: &str, argv: &Vec<String>) -> Result<T, docopt::Erro
 }
 
 /// Show errors to the user.
-fn error(err: &str) {
-    println!("{}", err);
+fn error(err: Message) {
+    print!("{}", err);
     process::exit(1);
 }
 
 /// Show program messages to the user.
-fn out(message: Option<String>) {
+fn out(message: Option<Message>) {
     if let Some(msg) = message {
-        println!("{}", msg);
+        print!("{}", msg);
     };
     process::exit(0);
 }

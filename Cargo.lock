@@ -1,6 +1,6 @@
 [root]
 name = "slate"
-version = "1.0.1"
+version = "1.0.2"
 dependencies = [
  "docopt 0.6.80 (registry+https://github.com/rust-lang/crates.io-index)",
  "exec 0.2.0 (registry+https://github.com/rust-lang/crates.io-index)",
