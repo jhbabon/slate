@@ -3,6 +3,10 @@ All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
+### Added
+- Add new option to get command, -n. It tells the command to not add
+  a trailing newline character to the value extracted, as in the `echo`
+  utility.
 
 ## [1.0.2] - 2016-05-12
 ### Fixed
