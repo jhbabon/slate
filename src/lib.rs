@@ -24,10 +24,6 @@ pub struct Slate {
     pub filepath: PathBuf,
 }
 
-// FIXME: The examples are fucking up the real .slate file
-// I need to pass an env variable to set up the file path
-// and fallback to $HOME/.slate if the env var is not
-// set.
 impl Default for Slate {
 
     /// Get a default Slate. It will use a default file
@@ -61,8 +57,15 @@ impl Slate {
     ///
     /// ```
     /// use slate::Slate;
+    /// use std::env;
     ///
-    /// let slate: Slate = Default::default();
+    /// // Create a temporal file for
+    /// // the example. You can use Default::default();
+    /// // to create the Slate and skip this part.
+    /// let mut temp = env::temp_dir();
+    /// temp.push(".slate");
+    ///
+    /// let slate: Slate = Slate { filepath: temp };
     /// let key = "foo".to_string();
     /// let value = "bar".to_string();
     ///
@@ -89,8 +92,15 @@ impl Slate {
     ///
     /// ```
     /// use slate::Slate;
+    /// use std::env;
     ///
-    /// let slate: Slate = Default::default();
+    /// // Create a temporal file for
+    /// // the example. You can use Default::default();
+    /// // to create the Slate and skip this part.
+    /// let mut temp = env::temp_dir();
+    /// temp.push(".slate");
+    ///
+    /// let slate: Slate = Slate { filepath: temp };
     /// let key = "foo".to_string();
     ///
     /// match slate.get(&key) {
@@ -116,8 +126,15 @@ impl Slate {
     ///
     /// ```
     /// use slate::Slate;
+    /// use std::env;
     ///
-    /// let slate: Slate = Default::default();
+    /// // Create a temporal file for
+    /// // the example. You can use Default::default();
+    /// // to create the Slate and skip this part.
+    /// let mut temp = env::temp_dir();
+    /// temp.push(".slate");
+    ///
+    /// let slate: Slate = Slate { filepath: temp };
     /// let key = "foo".to_string();
     ///
     /// match slate.remove(&key) {
@@ -142,8 +159,15 @@ impl Slate {
     ///
     /// ```
     /// use slate::Slate;
+    /// use std::env;
     ///
-    /// let slate: Slate = Default::default();
+    /// // Create a temporal file for
+    /// // the example. You can use Default::default();
+    /// // to create the Slate and skip this part.
+    /// let mut temp = env::temp_dir();
+    /// temp.push(".slate");
+    ///
+    /// let slate: Slate = Slate { filepath: temp };
     ///
     /// match slate.clear() {
     ///   Ok(_) => println!("Keys removed"),
@@ -167,8 +191,15 @@ impl Slate {
     ///
     /// ```
     /// use slate::Slate;
+    /// use std::env;
     ///
-    /// let slate: Slate = Default::default();
+    /// // Create a temporal file for
+    /// // the example. You can use Default::default();
+    /// // to create the Slate and skip this part.
+    /// let mut temp = env::temp_dir();
+    /// temp.push(".slate");
+    ///
+    /// let slate: Slate = Slate { filepath: temp };
     /// let old = "foo".to_string();
     /// let new = "bar".to_string();
     ///
@@ -200,8 +231,15 @@ impl Slate {
     ///
     /// ```
     /// use slate::Slate;
+    /// use std::env;
     ///
-    /// let slate: Slate = Default::default();
+    /// // Create a temporal file for
+    /// // the example. You can use Default::default();
+    /// // to create the Slate and skip this part.
+    /// let mut temp = env::temp_dir();
+    /// temp.push(".slate");
+    ///
+    /// let slate: Slate = Slate { filepath: temp };
     /// let list = match slate.list() {
     ///   Ok(all) => all,
     ///   Err(e) => panic!("{}", e),
@@ -229,7 +267,13 @@ impl Slate {
     fn read(&self) -> Result<HashMap<String, String>, &'static str> {
         let mut r = match File::open(&self.filepath) {
             Ok(file) => file,
-            Err(_) => { return Err("Cannot open file") }, // control when the file does not exist
+            Err(_) => {
+                let empty = HashMap::new();
+                match self.write(&empty) {
+                    Ok(_) => File::open(&self.filepath).unwrap(),
+                    Err(e) => { return Err(e) }
+                }
+            },
         };
 
         let mut buffer = String::new();
@@ -255,7 +299,7 @@ impl Slate {
         };
         match f.write_all(encoded.as_bytes()) {
             Ok(_) => Ok(()),
-            Err(_) => Err("Couldn't save file"),
+            Err(_) => Err("Cannot save file"),
         }
     }
 }
