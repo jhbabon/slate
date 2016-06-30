@@ -3,6 +3,8 @@ All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
+
+## [1.1.0] - 2016-06-30
 ### Added
 - Add new option to get command, -n. It tells the command to not add
   a trailing newline character to the value extracted, as in the `echo`
@@ -32,6 +34,7 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 - Tests for the main `Slate` structure.
 - Use `~/.slate` file as main storage point.
 
-[Unreleased]: https://github.com/jhbabon/slate/compare/v1.0.2...HEAD
-[1.0.2]: https://github.com/jhbabon/slate/compare/v1.0.2...v1.0.2
+[Unreleased]: https://github.com/jhbabon/slate/compare/v1.1.0...HEAD
+[1.1.0]: https://github.com/jhbabon/slate/compare/v1.0.2...v1.1.0
+[1.0.2]: https://github.com/jhbabon/slate/compare/v1.0.1...v1.0.2
 [1.0.1]: https://github.com/jhbabon/slate/compare/v1.0.0...v1.0.1
