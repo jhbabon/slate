@@ -1,5 +1,5 @@
 use cli::parse_args;
-use exec;
+use std::process::Command;
 use Slate;
 use message::Message;
 
@@ -37,11 +37,15 @@ pub fn run(argv: &Vec<String>) -> Result<Option<Message>, Message> {
     let args_list: Vec<&str> = value.split(" ").skip(1).collect();
     let cmd: String = value.split(" ").take(1).collect();
 
-    let mut runner = exec::Command::new(&cmd);
+    let mut runner = Command::new(&cmd);
     runner.args(&args_list);
-    let _err = runner.exec();
-
-    // If this line is executed it means that the process
-    // didn't change and so there must be an error.
-    Err(Message::Info("There was an error executing the command".to_string()))
+    match runner.spawn() {
+        Err(_) => { return Err(Message::Info("There was an error starting the program".to_string())) },
+        Ok(mut child) => {
+            match child.wait() {
+                Err(_) => { Err(Message::Info("There was an error executing the program".to_string())) },
+                Ok(_) => { Ok(None) }
+            }
+        }
+    }
 }

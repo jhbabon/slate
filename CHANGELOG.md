@@ -3,6 +3,8 @@ All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
+### Changed
+- Use `std::process::Command` lib in the exec subcommand instead of the `exec` crate.
 
 ## [1.1.0] - 2016-06-30
 ### Added
