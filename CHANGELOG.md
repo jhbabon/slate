@@ -3,6 +3,8 @@ All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
+
+## [1.2.0] - 2016-08-16
 ### Changed
 - Internal changes on how the result and errors of different functions are handled.
   Now internal IO errors, for example, will be displayed when the program fails.
