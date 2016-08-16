@@ -1,5 +1,6 @@
 use cli::parse_args;
 use Slate;
+use results::CommandResult;
 use message::Message;
 
 const USAGE: &'static str = "
@@ -31,20 +32,16 @@ struct Args {
     flag_no_eol: bool,
 }
 
-pub fn run(argv: &Vec<String>) -> Result<Option<Message>, Message> {
+pub fn run(argv: &Vec<String>) -> CommandResult {
     let args: Args = parse_args(USAGE, argv).unwrap_or_else(|e| e.exit());
     let slate: Slate = Default::default();
 
-    match slate.get(&args.arg_key) {
-        Ok(value) => {
-            let message: Message = if args.flag_no_eol {
-                Message::Raw(value)
-            } else {
-                Message::Info(value)
-            };
+    let value = try!(slate.get(&args.arg_key));
+    let message: Message = if args.flag_no_eol {
+        Message::Raw(value)
+    } else {
+        Message::Info(value)
+    };
 
-            Ok(Some(message))
-        },
-        Err(e) => Err(Message::Info(e.to_owned())),
-    }
+    Ok(Some(message))
 }

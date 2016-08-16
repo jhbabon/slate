@@ -2,6 +2,7 @@ use regex::{Regex, NoExpand};
 use cli::parse_args;
 use Slate;
 use message::Message;
+use results::CommandResult;
 
 const USAGE: &'static str = "
 Slate: Use a key as a snippet and replace its values with
@@ -33,16 +34,14 @@ struct Args {
     arg_value: Vec<String>,
 }
 
-pub fn run(argv: &Vec<String>) -> Result<Option<Message>, Message> {
+pub fn run(argv: &Vec<String>) -> CommandResult {
     let args: Args = parse_args(USAGE, argv).unwrap_or_else(|e| e.exit());
     let slate: Slate = Default::default();
     let pairs = args.arg_placeholder.iter()
         .zip(args.arg_value.iter());
 
-    let snippet = match slate.get(&args.arg_key) {
-        Err(e) => { return Err(Message::Info(e.to_owned())) },
-        Ok(value) => value.trim_right().to_owned(),
-    };
+    let value = try!(slate.get(&args.arg_key));
+    let snippet = value.trim_right().to_string();
 
     let output: String = pairs.fold(snippet, replacer);
 

@@ -3,6 +3,8 @@ use docopt;
 use std::process;
 
 use command;
+use errors::CommandError;
+use results::CommandResult;
 use message::Message;
 
 const USAGE: &'static str = "
@@ -41,7 +43,7 @@ enum Command {
 }
 
 impl Command {
-    fn run(self, argv: &Vec<String>) -> Result<Option<Message>, Message> {
+    fn run(self, argv: &Vec<String>) -> CommandResult {
         match self {
             Command::Set => { command::set::run(argv) },
             Command::Get => { command::get::run(argv) },
@@ -97,8 +99,8 @@ fn parse_main_args<T>(usage: &str, argv: &Vec<String>) -> Result<T, docopt::Erro
 }
 
 /// Show errors to the user.
-fn error(err: Message) {
-    print!("{}", err);
+fn error(err: CommandError) {
+    println!("{}", err);
     process::exit(1);
 }
 

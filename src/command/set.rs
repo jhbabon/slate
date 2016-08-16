@@ -1,7 +1,8 @@
 use std::io::{self, Read};
 use cli::parse_args;
 use Slate;
-use message::Message;
+use results::CommandResult;
+use errors::CommandError;
 
 const USAGE: &'static str = "
 Slate: Set a value using a name (or key).
@@ -28,7 +29,7 @@ struct Args {
     arg_value: Option<String>,
 }
 
-pub fn run(argv: &Vec<String>) -> Result<Option<Message>, Message> {
+pub fn run(argv: &Vec<String>) -> CommandResult {
     let args: Args = parse_args(USAGE, argv).unwrap_or_else(|e| e.exit());
 
     let slate: Slate = Default::default();
@@ -37,21 +38,15 @@ pub fn run(argv: &Vec<String>) -> Result<Option<Message>, Message> {
         Some(v) => Ok(v),
         None => input(),
     };
-    let value = match value {
-        Ok(v) => v,
-        Err(e) => { return Err(Message::Info(e.to_owned())) },
-    };
+    let value = try!(value);
+    try!(slate.set(&key, &value));
 
-    match slate.set(&key, &value) {
-        Ok(_) => Ok(None),
-        Err(e) => Err(Message::Info(e.to_owned())),
-    }
+    Ok(None)
 }
 
-fn input() -> Result<String, &'static str> {
+fn input() -> Result<String, CommandError> {
     let mut buffer = String::new();
-    match io::stdin().read_to_string(&mut buffer) {
-        Ok(_) => Ok(buffer),
-        Err(_) => Err("There was a problem reading from STDIN"),
-    }
+    try!(io::stdin().read_to_string(&mut buffer));
+
+    Ok(buffer)
 }

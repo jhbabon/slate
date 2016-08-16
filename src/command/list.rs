@@ -1,6 +1,7 @@
 use cli::parse_args;
 use Slate;
 use message::Message;
+use results::CommandResult;
 
 const USAGE: &'static str = "
 Slate: List all value names.
@@ -21,14 +22,12 @@ Examples:
 #[derive(Debug, RustcDecodable)]
 struct Args;
 
-pub fn run(argv: &Vec<String>) -> Result<Option<Message>, Message> {
+pub fn run(argv: &Vec<String>) -> CommandResult {
     let _args: Args = parse_args(USAGE, argv).unwrap_or_else(|e| e.exit());
     let slate: Slate = Default::default();
 
-    let output = match slate.list() {
-        Ok(list) => list.join("\n"),
-        Err(e) => { return Err(Message::Info(e.to_owned())) },
-    };
+    let list = try!(slate.list());
+    let output = list.join("\n");
 
     Ok(Some(Message::Info(output)))
 }

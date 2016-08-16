@@ -8,6 +8,8 @@ extern crate rand;
 pub mod command;
 pub mod cli;
 pub mod message;
+pub mod errors;
+pub mod results;
 
 use std::env;
 use std::path::PathBuf;
@@ -15,6 +17,7 @@ use std::io::prelude::*;
 use std::fs::File;
 use std::collections::HashMap;
 use rustc_serialize::json;
+use results::SlateResult;
 
 /// The main Key-Value structure.
 pub struct Slate {
@@ -73,11 +76,8 @@ impl Slate {
     ///   Err(e) => panic!("{}", e),
     /// };
     /// ```
-    pub fn set(&self, key: &String, value: &String) -> Result<(), &'static str> {
-        let mut contents = match self.read() {
-            Ok(contents) => contents,
-            Err(e) => { return Err(e) },
-        };
+    pub fn set(&self, key: &String, value: &String) -> SlateResult<()> {
+        let mut contents = try!(self.read());
 
         contents.insert(key.to_owned(), value.to_owned());
 
@@ -107,11 +107,8 @@ impl Slate {
     ///   Err(e) => panic!("{}", e),
     /// };
     /// ```
-    pub fn get(&self, key: &String) -> Result<String, &'static str> {
-        let contents = match self.read() {
-            Ok(contents) => contents,
-            Err(e) => { return Err(e) },
-        };
+    pub fn get(&self, key: &String) -> SlateResult<String> {
+        let contents = try!(self.read());
 
         match contents.get(key) {
             Some(value) => Ok(value.to_string()),
@@ -141,11 +138,8 @@ impl Slate {
     ///   Err(e) => panic!("{}", e),
     /// };
     /// ```
-    pub fn remove(&self, key: &String) -> Result<(), &'static str> {
-        let mut contents = match self.read() {
-            Ok(contents) => contents,
-            Err(e) => { return Err(e) },
-        };
+    pub fn remove(&self, key: &String) -> SlateResult<()> {
+        let mut contents = try!(self.read());
 
         contents.remove(key);
 
@@ -173,11 +167,8 @@ impl Slate {
     ///   Err(e) => panic!("{}", e),
     /// };
     /// ```
-    pub fn clear(&self) -> Result<(), &'static str> {
-        let mut contents = match self.read() {
-            Ok(contents) => contents,
-            Err(e) => { return Err(e) },
-        };
+    pub fn clear(&self) -> SlateResult<()> {
+        let mut contents = try!(self.read());
 
         contents.clear();
 
@@ -207,19 +198,10 @@ impl Slate {
     ///   Err(e) => panic!("{}", e),
     /// };
     /// ```
-    pub fn rename(&self, src: &String, dts: &String) -> Result<(), &'static str> {
-        let value = match self.get(src) {
-            Ok(v) => v,
-            Err(e) => { return Err(e) },
-        };
-
-        if let Err(e) = self.set(dts, &value) {
-            return Err(e);
-        };
-
-        if let Err(e) = self.remove(src) {
-            return Err(e);
-        };
+    pub fn rename(&self, src: &String, dts: &String) -> SlateResult<()> {
+        let value = try!(self.get(src));
+        try!(self.set(dts, &value));
+        try!(self.remove(src));
 
         Ok(())
     }
@@ -248,11 +230,8 @@ impl Slate {
     ///   println!("{}", key);
     /// }
     /// ```
-    pub fn list(&self) -> Result<Vec<String>, &'static str> {
-        let contents = match self.read() {
-            Ok(contents) => contents,
-            Err(e) => { return Err(e) },
-        };
+    pub fn list(&self) -> SlateResult<Vec<String>> {
+        let contents = try!(self.read());
 
         let mut keys: Vec<_> = contents.keys().collect();
         keys.sort(); // sort needs a mutable instance!!
@@ -263,7 +242,7 @@ impl Slate {
     }
 
     /// Read the contents of the Slate file.
-    fn read(&self) -> Result<HashMap<String, String>, &'static str> {
+    fn read(&self) -> SlateResult<HashMap<String, String>> {
         let mut r = match File::open(&self.filepath) {
             Ok(file) => file,
             Err(_) => {
@@ -275,31 +254,24 @@ impl Slate {
             },
         };
 
-        let mut buffer = String::new();
-        if let Err(_) = r.read_to_string(&mut buffer) {
-            return Err("Error reading file");
-        };
 
-        let contents: HashMap<String, String> = match json::decode(&buffer) {
-            Ok(hash) => hash,
-            Err(_) => HashMap::new(),
-        };
+        let mut buffer = String::new();
+        try!(r.read_to_string(&mut buffer));
+
+        let contents: HashMap<String, String> = json::decode(&buffer)
+            .unwrap_or(HashMap::new());
 
         Ok(contents)
     }
 
     /// Write to the Slate file.
-    fn write(&self, contents: &HashMap<String, String>) -> Result<(), &'static str> {
-        let encoded = json::encode(&contents).unwrap();
+    fn write(&self, contents: &HashMap<String, String>) -> SlateResult<()> {
+        let encoded = try!(json::encode(&contents));
+        let mut f = try!(File::create(&self.filepath));
 
-        let mut f = match File::create(&self.filepath) {
-            Ok(file) => file,
-            Err(_) => { return Err("Cannot create file") },
-        };
-        match f.write_all(encoded.as_bytes()) {
-            Ok(_) => Ok(()),
-            Err(_) => Err("Cannot save file"),
-        }
+        try!(f.write_all(encoded.as_bytes()));
+
+        Ok(())
     }
 }
 
@@ -315,7 +287,7 @@ pub fn version() -> String {
     match (maj, min, pat) {
         (Some(maj), Some(min), Some(pat)) =>
             format!("{}.{}.{}", maj, min, pat),
-            _ => "".to_owned(),
+            _ => "".to_string(),
     }
 }
 

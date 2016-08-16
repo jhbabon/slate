@@ -1,6 +1,8 @@
 use cli::parse_args;
 use Slate;
 use message::Message;
+use results::CommandResult;
+use errors::CommandError;
 
 const USAGE: &'static str = "
 Slate: Remove an element.
@@ -26,24 +28,23 @@ struct Args {
     flag_all: bool,
 }
 
-pub fn run(argv: &Vec<String>) -> Result<Option<Message>, Message> {
+pub fn run(argv: &Vec<String>) -> CommandResult {
     let args: Args = parse_args(USAGE, argv).unwrap_or_else(|e| e.exit());
     let slate: Slate = Default::default();
 
     if args.flag_all {
-        match slate.clear() {
-            Err(e) => Err(Message::Info(e.to_owned())),
-            Ok(_) => Ok(Some(Message::Info("All keys have been removed".to_owned()))),
-        }
+        try!(slate.clear());
+        Ok(Some(Message::Info("All keys have been removed".to_string())))
     } else {
         let key: String = match args.arg_key {
             Some(string) => string,
-            None => { return Err(Message::Info("You must provide the name of a key".to_owned())) },
+            None => {
+                return Err(CommandError::Argument("You must provide the name of a key".to_string()))
+            },
         };
 
-        match slate.remove(&key) {
-            Err(e) => Err(Message::Info(e.to_owned())),
-            Ok(_) => Ok(Some(Message::Info("The key has been removed".to_owned()))),
-        }
+        try!(slate.remove(&key));
+
+        Ok(Some(Message::Info("The key has been removed".to_string())))
     }
 }

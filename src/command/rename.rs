@@ -1,6 +1,7 @@
 use cli::parse_args;
 use Slate;
 use message::Message;
+use results::CommandResult;
 
 const USAGE: &'static str = "
 Slate: Rename a key with new name.
@@ -24,12 +25,11 @@ struct Args {
     arg_new: String,
 }
 
-pub fn run(argv: &Vec<String>) -> Result<Option<Message>, Message> {
+pub fn run(argv: &Vec<String>) -> CommandResult {
     let args: Args = parse_args(USAGE, argv).unwrap_or_else(|e| e.exit());
     let slate: Slate = Default::default();
 
-    match slate.rename(&args.arg_old, &args.arg_new) {
-        Err(e) => Err(Message::Info(e.to_owned())),
-        Ok(_) => Ok(Some(Message::Info("The key has been renamed".to_owned()))),
-    }
+    try!(slate.rename(&args.arg_old, &args.arg_new));
+
+    Ok(Some(Message::Info("The key has been renamed".to_string())))
 }
