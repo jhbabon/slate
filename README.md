@@ -92,6 +92,18 @@ $ slate get redis > redis.conf
 
 By default Slate will save all its contents in the file `~/.slate`. It is just a plain JSON file for the moment. It is better if you don't touch it and let the program handle it.
 
+### Using your own custom file
+
+If you don't want to use the default `~/.slate` file or, for example, you want to have a different one per project you can customize the path to the file with the `SLATE_FILEPATH` env variable:
+
+```
+$ SLATE_FILEPATH=/path/to/the/file/slate.json slate set foo bar
+$ SLATE_FILEPATH=/path/to/the/file/slate.json slate list
+foo
+```
+
+If you use a tool like [direnv](http://direnv.net/) you can easily set different slate files per directory/project.
+
 ## Experimental
 
 Slate also offers some extra commands to make it a little bit more useful, or not, maybe. But these commands are nice to play with until you find how useful they can be.
