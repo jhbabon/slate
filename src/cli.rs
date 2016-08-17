@@ -6,6 +6,8 @@ use command;
 use errors::CommandError;
 use results::CommandResult;
 use message::Message;
+use config::Config;
+use Slate;
 
 const USAGE: &'static str = "
 Slate: Manage your snippets from your command line.
@@ -43,15 +45,15 @@ enum Command {
 }
 
 impl Command {
-    fn run(self, argv: &Vec<String>) -> CommandResult {
+    fn run(self, slate: &Slate, argv: &Vec<String>) -> CommandResult {
         match self {
-            Command::Set => { command::set::run(argv) },
-            Command::Get => { command::get::run(argv) },
-            Command::List => { command::list::run(argv) },
-            Command::Remove => { command::remove::run(argv) },
-            Command::Rename => { command::rename::run(argv) },
-            Command::Exec => { command::exec::run(argv) },
-            Command::Snippet => { command::snippet::run(argv) },
+            Command::Set => { command::set::run(slate, argv) },
+            Command::Get => { command::get::run(slate, argv) },
+            Command::List => { command::list::run(slate, argv) },
+            Command::Remove => { command::remove::run(slate, argv) },
+            Command::Rename => { command::rename::run(slate, argv) },
+            Command::Exec => { command::exec::run(slate, argv) },
+            Command::Snippet => { command::snippet::run(slate, argv) },
         }
     }
 }
@@ -71,7 +73,10 @@ pub fn run(argv: Vec<String>) {
 
     let command = args.arg_command;
 
-    match command.run(&argv) {
+    let config = Config::new();
+    let slate: Slate = From::from(&config);
+
+    match command.run(&slate, &argv) {
         Err(e) => error(e),
         Ok(message) => out(message),
     };

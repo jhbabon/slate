@@ -1,6 +1,5 @@
 use cli::parse_args;
 use Slate;
-use config::Config;
 use message::Message;
 use results::CommandResult;
 use errors::CommandError;
@@ -29,10 +28,8 @@ struct Args {
     flag_all: bool,
 }
 
-pub fn run(argv: &Vec<String>) -> CommandResult {
+pub fn run(slate: &Slate, argv: &Vec<String>) -> CommandResult {
     let args: Args = parse_args(USAGE, argv).unwrap_or_else(|e| e.exit());
-    let config = Config::new();
-    let slate: Slate = From::from(&config);
 
     if args.flag_all {
         try!(slate.clear());
