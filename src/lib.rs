@@ -10,64 +10,48 @@ pub mod cli;
 pub mod message;
 pub mod errors;
 pub mod results;
+pub mod config;
 
-use std::env;
 use std::path::PathBuf;
 use std::io::prelude::*;
 use std::fs::File;
 use std::collections::HashMap;
 use rustc_serialize::json;
 use results::SlateResult;
+use config::Config;
 
 /// The main Key-Value structure.
-pub struct Slate {
-
-    /// Where the file containing the data is.
-    pub filepath: PathBuf,
+#[derive(Clone)]
+pub struct Slate<'s> {
+    pub config: &'s Config,
 }
 
-impl Default for Slate {
-
-    /// Get a default Slate. It will use a default file
-    /// in your home directory, the `.slate` file.
-    ///
-    /// # Example
-    ///
-    /// ```
-    /// use slate::Slate;
-    ///
-    /// let slate: Slate = Default::default();
-    /// println!("{}", slate.filepath.to_str().unwrap());
-    /// //=> $HOME/.slate
-    /// ```
-    fn default() -> Slate {
-        let mut path = match env::home_dir() {
-            Some(home) => home,
-            None => panic!("No HOME dir found"),
-        };
-        path.push(".slate");
-
-        Slate { filepath: path }
+impl<'s> From<&'s Config> for Slate<'s> {
+    fn from(config: &'s Config) -> Slate<'s> {
+        Slate { config: config }
     }
 }
 
-impl Slate {
+impl<'s> Slate<'s> {
+
+    pub fn filepath(&self) -> &PathBuf {
+        &self.config.filepath
+    }
 
     /// Set a key with its value.
     ///
     /// # Example
     ///
-    /// ```
+    /// ```rust
+    /// use slate::config::Config;
     /// use slate::Slate;
     /// use std::env;
     ///
-    /// // Create a temporal file for
-    /// // the example. You can use Default::default();
-    /// // to create the Slate and skip this part.
     /// let mut temp = env::temp_dir();
     /// temp.push(".slate");
     ///
-    /// let slate: Slate = Slate { filepath: temp };
+    /// let config = Config { filepath: temp };
+    /// let slate: Slate = From::from(&config);
     /// let key = "foo".to_string();
     /// let value = "bar".to_string();
     ///
@@ -89,17 +73,16 @@ impl Slate {
     ///
     /// # Example
     ///
-    /// ```
+    /// ```rust
+    /// use slate::config::Config;
     /// use slate::Slate;
     /// use std::env;
     ///
-    /// // Create a temporal file for
-    /// // the example. You can use Default::default();
-    /// // to create the Slate and skip this part.
     /// let mut temp = env::temp_dir();
     /// temp.push(".slate");
     ///
-    /// let slate: Slate = Slate { filepath: temp };
+    /// let config = Config { filepath: temp };
+    /// let slate: Slate = From::from(&config);
     /// let key = "foo".to_string();
     ///
     /// match slate.get(&key) {
@@ -120,17 +103,16 @@ impl Slate {
     ///
     /// # Example
     ///
-    /// ```
+    /// ```rust
+    /// use slate::config::Config;
     /// use slate::Slate;
     /// use std::env;
     ///
-    /// // Create a temporal file for
-    /// // the example. You can use Default::default();
-    /// // to create the Slate and skip this part.
     /// let mut temp = env::temp_dir();
     /// temp.push(".slate");
     ///
-    /// let slate: Slate = Slate { filepath: temp };
+    /// let config = Config { filepath: temp };
+    /// let slate: Slate = From::from(&config);
     /// let key = "foo".to_string();
     ///
     /// match slate.remove(&key) {
@@ -150,17 +132,16 @@ impl Slate {
     ///
     /// # Example
     ///
-    /// ```
+    /// ```rust
+    /// use slate::config::Config;
     /// use slate::Slate;
     /// use std::env;
     ///
-    /// // Create a temporal file for
-    /// // the example. You can use Default::default();
-    /// // to create the Slate and skip this part.
     /// let mut temp = env::temp_dir();
     /// temp.push(".slate");
     ///
-    /// let slate: Slate = Slate { filepath: temp };
+    /// let config = Config { filepath: temp };
+    /// let slate: Slate = From::from(&config);
     ///
     /// match slate.clear() {
     ///   Ok(_) => println!("Keys removed"),
@@ -179,17 +160,16 @@ impl Slate {
     ///
     /// # Example
     ///
-    /// ```
+    /// ```rust
+    /// use slate::config::Config;
     /// use slate::Slate;
     /// use std::env;
     ///
-    /// // Create a temporal file for
-    /// // the example. You can use Default::default();
-    /// // to create the Slate and skip this part.
     /// let mut temp = env::temp_dir();
     /// temp.push(".slate");
     ///
-    /// let slate: Slate = Slate { filepath: temp };
+    /// let config = Config { filepath: temp };
+    /// let slate: Slate = From::from(&config);
     /// let old = "foo".to_string();
     /// let new = "bar".to_string();
     ///
@@ -210,17 +190,16 @@ impl Slate {
     ///
     /// # Example
     ///
-    /// ```
+    /// ```rust
+    /// use slate::config::Config;
     /// use slate::Slate;
     /// use std::env;
     ///
-    /// // Create a temporal file for
-    /// // the example. You can use Default::default();
-    /// // to create the Slate and skip this part.
     /// let mut temp = env::temp_dir();
     /// temp.push(".slate");
     ///
-    /// let slate: Slate = Slate { filepath: temp };
+    /// let config = Config { filepath: temp };
+    /// let slate: Slate = From::from(&config);
     /// let list = match slate.list() {
     ///   Ok(all) => all,
     ///   Err(e) => panic!("{}", e),
@@ -243,12 +222,12 @@ impl Slate {
 
     /// Read the contents of the Slate file.
     fn read(&self) -> SlateResult<HashMap<String, String>> {
-        let mut r = match File::open(&self.filepath) {
+        let mut r = match File::open(self.filepath()) {
             Ok(file) => file,
             Err(_) => {
                 let empty = HashMap::new();
                 match self.write(&empty) {
-                    Ok(_) => File::open(&self.filepath).unwrap(),
+                    Ok(_) => File::open(self.filepath()).unwrap(),
                     Err(e) => { return Err(e) }
                 }
             },
@@ -267,7 +246,7 @@ impl Slate {
     /// Write to the Slate file.
     fn write(&self, contents: &HashMap<String, String>) -> SlateResult<()> {
         let encoded = try!(json::encode(&contents));
-        let mut f = try!(File::create(&self.filepath));
+        let mut f = try!(File::create(self.filepath()));
 
         try!(f.write_all(encoded.as_bytes()));
 
@@ -299,6 +278,7 @@ mod tests {
     use std::io::prelude::*;
     use std::fs::File;
     use rand::{thread_rng, Rng};
+    use config::Config;
 
     fn create_temp_file(body: &str) -> PathBuf {
         let random_name: String = thread_rng().gen_ascii_chars().take(10).collect();
@@ -319,19 +299,20 @@ mod tests {
     }
 
     #[test]
-    fn test_default_slate() {
-        let slate: Slate = Default::default();
-        let mut expected: PathBuf = env::home_dir().unwrap();
-        expected.push(".slate");
+    fn it_gets_values_from_config() {
+        let path = PathBuf::from("/tmp/slate.test");
+        let config = Config { filepath: path };
+        let slate: Slate = From::from(&config);
 
-        assert_eq!(expected, slate.filepath);
+        assert_eq!(config.filepath, *slate.filepath());
     }
 
     #[test]
     fn it_sets_keys_with_values() {
         let temp = create_temp_file("");
         let mut file = File::open(&temp).unwrap();
-        let slate = Slate { filepath: temp };
+        let config = Config { filepath: temp };
+        let slate = Slate { config: &config };
         let key = "test".to_string();
         let value = "expected".to_string();
 
@@ -350,7 +331,8 @@ mod tests {
     #[test]
     fn it_gets_keys() {
         let temp = create_temp_file("{\"test\":\"expected\"}");
-        let slate = Slate { filepath: temp };
+        let config = Config { filepath: temp };
+        let slate = Slate { config: &config };
         let key = "test".to_string();
 
         match slate.get(&key) {
@@ -362,7 +344,8 @@ mod tests {
     #[test]
     fn it_gets_missing_keys() {
         let temp = create_temp_file("{\"test\":\"expected\"}");
-        let slate = Slate { filepath: temp };
+        let config = Config { filepath: temp };
+        let slate = Slate { config: &config };
         let key = "missing".to_string();
 
         match slate.get(&key) {
@@ -374,7 +357,8 @@ mod tests {
     #[test]
     fn it_lists_keys() {
         let temp = create_temp_file("{\"a\":\"1\",\"b\":\"2\"}");
-        let slate = Slate { filepath: temp };
+        let config = Config { filepath: temp };
+        let slate = Slate { config: &config };
 
         match slate.list() {
             Ok(list) => assert_eq!(vec!["a", "b"], list),
@@ -386,7 +370,8 @@ mod tests {
     fn it_removes_keys() {
         let temp = create_temp_file("{\"test\":\"expected\"}");
         let mut file = File::open(&temp).unwrap();
-        let slate = Slate { filepath: temp };
+        let config = Config { filepath: temp };
+        let slate = Slate { config: &config };
         let key = "test".to_string();
 
         if let Err(e) = slate.remove(&key) {
@@ -405,7 +390,8 @@ mod tests {
     fn it_renames_keys() {
         let temp = create_temp_file("{\"test\":\"expected\"}");
         let mut file = File::open(&temp).unwrap();
-        let slate = Slate { filepath: temp };
+        let config = Config { filepath: temp };
+        let slate = Slate { config: &config };
         let key = "test".to_string();
         let new_key = "spec".to_string();
 
@@ -425,7 +411,8 @@ mod tests {
     fn it_clears_keys() {
         let temp = create_temp_file("{\"test\":\"expected\"}");
         let mut file = File::open(&temp).unwrap();
-        let slate = Slate { filepath: temp };
+        let config = Config { filepath: temp };
+        let slate = Slate { config: &config };
 
         if let Err(e) = slate.clear() {
             panic!("Cannot clear keys: {:?}", e);

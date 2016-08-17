@@ -1,5 +1,6 @@
 use cli::parse_args;
 use Slate;
+use config::Config;
 use message::Message;
 use results::CommandResult;
 
@@ -24,7 +25,8 @@ struct Args;
 
 pub fn run(argv: &Vec<String>) -> CommandResult {
     let _args: Args = parse_args(USAGE, argv).unwrap_or_else(|e| e.exit());
-    let slate: Slate = Default::default();
+    let config = Config::new();
+    let slate: Slate = From::from(&config);
 
     let list = try!(slate.list());
     let output = list.join("\n");
