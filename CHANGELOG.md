@@ -3,6 +3,8 @@ All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
+
+## [1.3.0] - 2016-08-17
 ### Added
 - Now you can use your own slate file by setting up the `SLATE_FILEPATH`
   env var. This must be a valid path. If the file doesn't exist
