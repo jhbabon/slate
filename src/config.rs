@@ -6,13 +6,11 @@ const SLATE_FILEPATH: &'static str = "SLATE_FILEPATH";
 /// Main Configuratio struct
 #[derive(Clone)]
 pub struct Config {
-
     /// Path to the slate file.
     pub filepath: PathBuf,
 }
 
 impl Config {
-
     /// Get a new Config struct with all of its fields
     /// initialized with env vars or default values.
     ///
@@ -49,7 +47,7 @@ impl Config {
     pub fn new() -> Config {
         let config: Config = match env::var(SLATE_FILEPATH) {
             Ok(value) => Config { filepath: PathBuf::from(value) },
-            Err(_)    => Default::default(),
+            Err(_) => Default::default(),
         };
 
         config
@@ -57,7 +55,6 @@ impl Config {
 }
 
 impl Default for Config {
-
     /// Default implementation of a Config struct.
     ///
     /// It will always use the `$HOME/.slate` for the

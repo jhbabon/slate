@@ -47,13 +47,13 @@ enum Command {
 impl Command {
     fn run(self, slate: &Slate, argv: &Vec<String>) -> CommandResult {
         match self {
-            Command::Set => { command::set::run(slate, argv) },
-            Command::Get => { command::get::run(slate, argv) },
-            Command::List => { command::list::run(slate, argv) },
-            Command::Remove => { command::remove::run(slate, argv) },
-            Command::Rename => { command::rename::run(slate, argv) },
-            Command::Exec => { command::exec::run(slate, argv) },
-            Command::Snippet => { command::snippet::run(slate, argv) },
+            Command::Set => command::set::run(slate, argv),
+            Command::Get => command::get::run(slate, argv),
+            Command::List => command::list::run(slate, argv),
+            Command::Remove => command::remove::run(slate, argv),
+            Command::Rename => command::rename::run(slate, argv),
+            Command::Exec => command::exec::run(slate, argv),
+            Command::Snippet => command::snippet::run(slate, argv),
         }
     }
 }
@@ -86,21 +86,25 @@ pub fn run(argv: Vec<String>) {
 ///
 /// This is used mainly by subcommands.
 pub fn parse_args<T>(usage: &str, argv: &Vec<String>) -> Result<T, docopt::Error>
-    where T: Decodable {
-        docopt::Docopt::new(usage)
-            .and_then(|d| d.argv(argv)
-                           .version(Some(super::version()))
-                           .decode())
+    where T: Decodable
+{
+    docopt::Docopt::new(usage).and_then(|d| {
+        d.argv(argv)
+            .version(Some(super::version()))
+            .decode()
+    })
 }
 
 /// Parse arguments for the main command.
 fn parse_main_args<T>(usage: &str, argv: &Vec<String>) -> Result<T, docopt::Error>
-    where T: Decodable {
-        docopt::Docopt::new(usage)
-            .and_then(|d| d.argv(argv)
-                           .options_first(true)
-                           .version(Some(super::version()))
-                           .decode())
+    where T: Decodable
+{
+    docopt::Docopt::new(usage).and_then(|d| {
+        d.argv(argv)
+            .options_first(true)
+            .version(Some(super::version()))
+            .decode()
+    })
 }
 
 /// Show errors to the user.

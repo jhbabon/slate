@@ -33,7 +33,6 @@ impl<'s> From<&'s Config> for Slate<'s> {
 }
 
 impl<'s> Slate<'s> {
-
     pub fn filepath(&self) -> &PathBuf {
         &self.config.filepath
     }
@@ -228,17 +227,16 @@ impl<'s> Slate<'s> {
                 let empty = HashMap::new();
                 match self.write(&empty) {
                     Ok(_) => File::open(self.filepath()).unwrap(),
-                    Err(e) => { return Err(e) }
+                    Err(e) => return Err(e),
                 }
-            },
+            }
         };
 
 
         let mut buffer = String::new();
         try!(r.read_to_string(&mut buffer));
 
-        let contents: HashMap<String, String> = json::decode(&buffer)
-            .unwrap_or(HashMap::new());
+        let contents: HashMap<String, String> = json::decode(&buffer).unwrap_or(HashMap::new());
 
         Ok(contents)
     }
@@ -257,16 +255,13 @@ impl<'s> Slate<'s> {
 
 /// Get the version of the library.
 pub fn version() -> String {
-    let (maj, min, pat) = (
-        option_env!("CARGO_PKG_VERSION_MAJOR"),
-        option_env!("CARGO_PKG_VERSION_MINOR"),
-        option_env!("CARGO_PKG_VERSION_PATCH"),
-    );
+    let (maj, min, pat) = (option_env!("CARGO_PKG_VERSION_MAJOR"),
+                           option_env!("CARGO_PKG_VERSION_MINOR"),
+                           option_env!("CARGO_PKG_VERSION_PATCH"));
 
     match (maj, min, pat) {
-        (Some(maj), Some(min), Some(pat)) =>
-            format!("{}.{}.{}", maj, min, pat),
-            _ => "".to_string(),
+        (Some(maj), Some(min), Some(pat)) => format!("{}.{}.{}", maj, min, pat),
+        _ => "".to_string(),
     }
 }
 

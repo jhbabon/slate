@@ -2,11 +2,10 @@ use std::fmt;
 
 pub enum Message {
     Raw(String),
-    Info(String)
+    Info(String),
 }
 
 impl fmt::Display for Message {
-
     /// If a Message is of type Raw, it's inner str is not going
     /// to be altered when using the `format!` macro.
     ///
@@ -34,7 +33,7 @@ impl fmt::Display for Message {
     /// ```
     fn fmt(&self, formatter: &mut fmt::Formatter) -> fmt::Result {
         match self {
-            &Message::Raw(ref msg)  => write!(formatter, "{}", msg),
+            &Message::Raw(ref msg) => write!(formatter, "{}", msg),
             &Message::Info(ref msg) => write!(formatter, "{}\n", msg.trim_right()),
         }
     }
@@ -47,8 +46,8 @@ mod tests {
     #[test]
     fn it_does_not_touch_raw_messages() {
         let expected = "don't touch me".to_string();
-        let subject  = Message::Raw("don't touch me".to_string());
-        let actual   = format!("{}", subject);
+        let subject = Message::Raw("don't touch me".to_string());
+        let actual = format!("{}", subject);
 
         assert_eq!(expected, actual);
     }
@@ -56,8 +55,8 @@ mod tests {
     #[test]
     fn it_adds_eol_to_info_messages() {
         let expected = "you can touch me\n".to_string();
-        let subject  = Message::Info("you can touch me".to_string());
-        let actual   = format!("{}", subject);
+        let subject = Message::Info("you can touch me".to_string());
+        let actual = format!("{}", subject);
 
         assert_eq!(expected, actual);
     }
@@ -65,8 +64,8 @@ mod tests {
     #[test]
     fn it_does_not_add_multiple_eol_to_info_messages() {
         let expected = "you can touch me\n".to_string();
-        let subject  = Message::Info("you can touch me\n".to_string());
-        let actual   = format!("{}", subject);
+        let subject = Message::Info("you can touch me\n".to_string());
+        let actual = format!("{}", subject);
 
         assert_eq!(expected, actual);
     }

@@ -36,7 +36,8 @@ struct Args {
 
 pub fn run(slate: &Slate, argv: &Vec<String>) -> CommandResult {
     let args: Args = parse_args(USAGE, argv).unwrap_or_else(|e| e.exit());
-    let pairs = args.arg_placeholder.iter()
+    let pairs = args.arg_placeholder
+        .iter()
         .zip(args.arg_value.iter());
 
     let value = try!(slate.get(&args.arg_key));

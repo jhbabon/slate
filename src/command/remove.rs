@@ -39,7 +39,7 @@ pub fn run(slate: &Slate, argv: &Vec<String>) -> CommandResult {
             Some(string) => string,
             None => {
                 return Err(CommandError::Argument("You must provide the name of a key".to_string()))
-            },
+            }
         };
 
         try!(slate.remove(&key));
