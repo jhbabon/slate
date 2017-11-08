@@ -1,6 +1,6 @@
 [package]
 name = "slate"
-version = "1.3.0"
+version = "1.4.0"
 authors = ["Juan Hernández <juan.hernandez.babon@gmail.com>"]
 description = "Manage your snippets from your command line."
 homepage = "https://github.com/jhbabon/slate"
