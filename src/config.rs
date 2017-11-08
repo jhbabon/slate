@@ -3,7 +3,19 @@ use std::path::PathBuf;
 
 const SLATE_FILEPATH: &'static str = "SLATE_FILEPATH";
 
-/// Main Configuratio struct
+pub trait EnvWrapper {
+    fn var(&self, var: &'static str) -> Result<String, env::VarError>;
+}
+
+struct Env;
+
+impl EnvWrapper for Env {
+    fn var(&self, var: &'static str) -> Result<String, env::VarError> {
+        env::var(var)
+    }
+}
+
+/// Main Configuration struct
 #[derive(Clone)]
 pub struct Config {
     /// Path to the slate file.
@@ -25,9 +37,10 @@ impl Config {
     /// use std::env;
     ///
     /// env::set_var("SLATE_FILEPATH", "/tmp/var");
-    /// let config = Config::new();
+    /// let config = Config::from_env();
     /// println!("{}", config.filepath.to_str().unwrap());
     /// //=> /tmp/slate
+    /// env::remove_var("SLATE_FILEPATH");
     /// ```
     ///
     /// If there is no env var, the default `$HOME/.slate` value
@@ -40,12 +53,17 @@ impl Config {
     /// use std::env;
     ///
     /// env::remove_var("SLATE_FILEPATH");
-    /// let config = Config::new();
+    /// let config = Config::from_env();
     /// println!("{}", config.filepath.to_str().unwrap());
     /// //=> $HOME/.slate
     /// ```
-    pub fn new() -> Config {
-        let config: Config = match env::var(SLATE_FILEPATH) {
+    pub fn from_env() -> Config {
+        let wrapper = Env;
+        Self::new(wrapper)
+    }
+
+    pub fn new<T: EnvWrapper>(wrapper: T) -> Config {
+        let config: Config = match wrapper.var(SLATE_FILEPATH) {
             Ok(value) => Config { filepath: PathBuf::from(value) },
             Err(_) => Default::default(),
         };
@@ -78,9 +96,23 @@ mod tests {
     use std::env;
     use std::path::PathBuf;
 
+    struct MockEnv {
+        value: Option<bool>,
+    }
+
+    impl EnvWrapper for MockEnv {
+        fn var(&self, _var: &'static str) -> Result<String, env::VarError> {
+            match self.value {
+                Some(_) => Ok("/tmp/slate".to_string()),
+                None => Err(env::VarError::NotPresent)
+            }
+        }
+    }
+
     #[test]
     fn it_uses_the_homedir_as_default_path() {
-        let config: Config = Config::new();
+        let wrapper = MockEnv { value: None };
+        let config: Config = Config::new(wrapper);
         let mut expected: PathBuf = env::home_dir().unwrap();
         expected.push(".slate");
 
@@ -89,15 +121,10 @@ mod tests {
 
     #[test]
     fn it_uses_the_environment_var_if_set() {
-        // setup
-        env::set_var("SLATE_FILEPATH", "/tmp/slate");
-
-        let config: Config = Config::new();
+        let wrapper = MockEnv { value: Some(true) };
+        let config: Config = Config::new(wrapper);
         let expected: PathBuf = PathBuf::from("/tmp/slate");
 
         assert_eq!(expected, config.filepath);
-
-        // teardown
-        env::remove_var("SLATE_FILEPATH");
     }
 }

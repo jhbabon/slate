@@ -67,7 +67,7 @@ pub fn run(argv: Vec<String>) {
 
     let command = args.arg_command;
 
-    let config = Config::new();
+    let config = Config::from_env();
     let slate: Slate = From::from(&config);
 
     match command.run(&slate, &argv) {

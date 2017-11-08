@@ -41,8 +41,6 @@ Commands:
    list    List all keys.
    rename  Rename a key.
    remove  Delete a key.
-   exec    Run a key value as a command.
-   snippet Get a key and replace all placeholders with new data.
 ```
 
 As you can see, Slate is basically a `HashMap`, so playing with it is straight forward:

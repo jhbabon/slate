@@ -271,7 +271,6 @@ mod tests {
     use super::*;
     use std::env;
     use std::path::PathBuf;
-    use std::io::prelude::*;
     use std::fs::File;
     use rand::{thread_rng, Rng};
     use config::Config;
