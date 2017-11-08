@@ -19,7 +19,7 @@ Examples:
   #=> more
 ";
 
-#[derive(Debug, RustcDecodable)]
+#[derive(Debug, Deserialize)]
 struct Args;
 
 pub fn run(slate: &Slate, argv: &Vec<String>) -> CommandResult {

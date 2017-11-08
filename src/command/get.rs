@@ -26,7 +26,7 @@ Examples:
   $ _ # no EOL
 ";
 
-#[derive(Debug, RustcDecodable)]
+#[derive(Debug, Deserialize)]
 struct Args {
     arg_key: String,
     flag_no_eol: bool,

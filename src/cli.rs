@@ -1,5 +1,5 @@
-use rustc_serialize::Decodable;
 use docopt;
+use serde::de::Deserialize;
 use std::process;
 
 use command;
@@ -29,19 +29,15 @@ Commands:
    list    List all keys.
    rename  Rename a key.
    remove  Delete a key.
-   exec    Run a key value as a command.
-   snippet Get a key and replace all placeholders with new data.
 ";
 
-#[derive(Debug, RustcDecodable)]
+#[derive(Debug, Deserialize)]
 enum Command {
     Set,
     Get,
     List,
     Remove,
     Rename,
-    Exec,
-    Snippet,
 }
 
 impl Command {
@@ -52,13 +48,11 @@ impl Command {
             Command::List => command::list::run(slate, argv),
             Command::Remove => command::remove::run(slate, argv),
             Command::Rename => command::rename::run(slate, argv),
-            Command::Exec => command::exec::run(slate, argv),
-            Command::Snippet => command::snippet::run(slate, argv),
         }
     }
 }
 
-#[derive(Debug, RustcDecodable)]
+#[derive(Debug, Deserialize)]
 struct Args {
     arg_command: Command,
     flag_help: bool,
@@ -85,25 +79,25 @@ pub fn run(argv: Vec<String>) {
 /// Parse arguments based on a USAGE slice string.
 ///
 /// This is used mainly by subcommands.
-pub fn parse_args<T>(usage: &str, argv: &Vec<String>) -> Result<T, docopt::Error>
-    where T: Decodable
+pub fn parse_args<'a, T>(usage: &str, argv: &Vec<String>) -> Result<T, docopt::Error>
+    where T: Deserialize<'a>
 {
     docopt::Docopt::new(usage).and_then(|d| {
         d.argv(argv)
             .version(Some(super::version()))
-            .decode()
+            .deserialize()
     })
 }
 
 /// Parse arguments for the main command.
-fn parse_main_args<T>(usage: &str, argv: &Vec<String>) -> Result<T, docopt::Error>
-    where T: Decodable
+fn parse_main_args<'a, T>(usage: &str, argv: &Vec<String>) -> Result<T, docopt::Error>
+    where T: Deserialize<'a>
 {
     docopt::Docopt::new(usage).and_then(|d| {
         d.argv(argv)
             .options_first(true)
             .version(Some(super::version()))
-            .decode()
+            .deserialize()
     })
 }
 

@@ -22,7 +22,7 @@ Examples:
   #=> The key has been removed
 ";
 
-#[derive(Debug, RustcDecodable)]
+#[derive(Debug, Deserialize)]
 struct Args {
     arg_key: Option<String>,
     flag_all: bool,

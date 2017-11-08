@@ -1,6 +1,8 @@
-extern crate rustc_serialize;
+#[macro_use]
+extern crate serde_derive;
+extern crate serde_json;
+extern crate serde;
 extern crate docopt;
-extern crate regex;
 
 #[cfg(test)]
 extern crate rand;
@@ -16,7 +18,6 @@ use std::path::PathBuf;
 use std::io::prelude::*;
 use std::fs::File;
 use std::collections::HashMap;
-use rustc_serialize::json;
 use results::SlateResult;
 use config::Config;
 
@@ -236,14 +237,14 @@ impl<'s> Slate<'s> {
         let mut buffer = String::new();
         try!(r.read_to_string(&mut buffer));
 
-        let contents: HashMap<String, String> = json::decode(&buffer).unwrap_or(HashMap::new());
+        let contents: HashMap<String, String> = serde_json::from_str(&buffer).unwrap_or(HashMap::new());
 
         Ok(contents)
     }
 
     /// Write to the Slate file.
     fn write(&self, contents: &HashMap<String, String>) -> SlateResult<()> {
-        let encoded = try!(json::encode(&contents));
+        let encoded = try!(serde_json::to_string(&contents));
         let mut f = try!(File::create(self.filepath()));
 
         try!(f.write_all(encoded.as_bytes()));

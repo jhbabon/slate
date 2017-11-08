@@ -23,7 +23,7 @@ Examples:
   cat config.yml | slate set config
 ";
 
-#[derive(Debug, RustcDecodable)]
+#[derive(Debug, Deserialize)]
 struct Args {
     arg_key: String,
     arg_value: Option<String>,

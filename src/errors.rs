@@ -1,12 +1,12 @@
+use serde_json;
 use std::error;
 use std::fmt;
 use std::io;
-use rustc_serialize::json;
 
 #[derive(Debug)]
 pub enum SlateError {
     IO(io::Error),
-    JSON(json::EncoderError),
+    JSON(serde_json::Error),
 }
 
 impl fmt::Display for SlateError {
@@ -40,8 +40,8 @@ impl From<io::Error> for SlateError {
     }
 }
 
-impl From<json::EncoderError> for SlateError {
-    fn from(err: json::EncoderError) -> SlateError {
+impl From<serde_json::Error> for SlateError {
+    fn from(err: serde_json::Error) -> SlateError {
         SlateError::JSON(err)
     }
 }

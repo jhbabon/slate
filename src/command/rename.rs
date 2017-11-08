@@ -19,7 +19,7 @@ Examples:
   #=> The key has been renamed
 ";
 
-#[derive(Debug, RustcDecodable)]
+#[derive(Debug, Deserialize)]
 struct Args {
     arg_old: String,
     arg_new: String,
